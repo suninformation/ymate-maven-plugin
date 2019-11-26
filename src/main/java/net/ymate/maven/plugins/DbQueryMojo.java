@@ -19,8 +19,12 @@ import net.ymate.platform.commons.ConsoleTableBuilder;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
-import net.ymate.platform.core.*;
+import net.ymate.platform.core.Application;
+import net.ymate.platform.core.ApplicationConfigureBuilder;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.configuration.IConfigReader;
+import net.ymate.platform.core.impl.DefaultApplicationConfigureParser;
 import net.ymate.platform.core.persistence.IPersistenceConfig;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
@@ -87,7 +91,7 @@ public class DbQueryMojo extends AbstractMojo {
         if (StringUtils.isBlank(connectionUrl)) {
             throw new MojoExecutionException(String.format("'%s' parameter is not set in the configuration file!", connectionUrlKey));
         }
-        IApplicationConfigurer configurer = ApplicationConfigureBuilder.builder().runEnv(IApplication.Environment.DEV).proxyFactory(YMP.getProxyFactory())
+        IApplicationConfigurer configurer = ApplicationConfigureBuilder.builder(DefaultApplicationConfigureParser.defaultEmpty()).runEnv(IApplication.Environment.DEV)
                 .addModuleConfigurers(DefaultDatabaseConfigurable.builder()
                         .addDataSources(DefaultDatabaseDataSourceConfigurable.builder(IPersistenceConfig.DEFAULT_STR)
                                 .connectionUrl(connectionUrl)
@@ -101,7 +105,7 @@ public class DbQueryMojo extends AbstractMojo {
             List<String> columns = dateColumns != null ? Arrays.asList(dateColumns) : Collections.emptyList();
             ResultSetHelper.ColumnRender columnRender = columns.isEmpty() ? null : (columnName, value) -> columns.contains(columnName) ? DateTimeUtils.formatTime(BlurObject.bind(value).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS) : value;
             //
-            IResultSet<Object[]> resultSet = SQL.create(application.getModuleManager().getModule(JDBC.class), sql).find(IResultSetHandler.ARRAY, Page.createIfNeed(page, pageSize));
+            IResultSet<Object[]> resultSet = SQL.create(application.getModuleManager().getModule(JDBC.class), sql).find(IResultSetHandler.ARRAY, Page.createIfNeed(pageSize > 0 && page <= 0 ? 1 : page, page > 0 && pageSize <= 0 ? Page.DEFAULT_PAGE_SIZE : pageSize));
             if (resultSet.isResultsAvailable()) {
                 ResultSetHelper resultSetHelper = ResultSetHelper.bind(resultSet);
                 switch (StringUtils.lowerCase(format)) {
