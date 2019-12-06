@@ -16,6 +16,7 @@
 package net.ymate.maven.plugins;
 
 import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import net.ymate.platform.commons.FreemarkerConfigBuilder;
 import net.ymate.platform.commons.util.RuntimeUtils;
@@ -23,10 +24,8 @@ import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -57,7 +56,6 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
         templateRootPath = AbstractMojo.class.getPackage().getName().replace(".", "/");
         try {
             freemarkerConfig = FreemarkerConfigBuilder.create().addTemplateClass(AbstractMojo.class, "/")
-                    .setEncoding("UTF-8")
                     .setTemplateExceptionHandler(TemplateExceptionHandler.DEBUG_HANDLER).build();
         } catch (IOException e) {
             getLog().error(RuntimeUtils.unwrapThrow(e));
@@ -82,6 +80,39 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
             }
         }
         return null;
+    }
+
+    public void doWriterTemplateFile(String path, String fileName, String tmplFile, Map<String, Object> properties) throws IOException, TemplateException {
+        File outputFile = new File(path, fileName);
+        doWriterTemplateFile(new FileOutputStream(outputFile), tmplFile, properties);
+        this.getLog().info("Output file: " + outputFile);
+    }
+
+    public void doWriterTemplateFile(OutputStream output, String tmplFile, Map<String, Object> properties) throws IOException, TemplateException {
+        if (tmplFile.charAt(0) != '/') {
+            tmplFile = String.format("/%s", tmplFile);
+        }
+        if (!tmplFile.startsWith("/tmpl")) {
+            tmplFile = String.format("/tmpl%s", tmplFile);
+        }
+        if (!tmplFile.endsWith(".ftl")) {
+            tmplFile = String.format("%s.ftl", tmplFile);
+        }
+        try (Writer writer = new OutputStreamWriter(output, freemarkerConfig.getOutputEncoding())) {
+            freemarkerConfig.getTemplate(templateRootPath + tmplFile).process(properties, new BufferedWriter(writer));
+        }
+    }
+
+    public void doWriterTemplateFile(File targetFile, String tmplFile, Map<String, Object> properties) throws IOException, TemplateException {
+        boolean notSkipped = !targetFile.exists() || targetFile.exists() && isOverwrite();
+        if (notSkipped) {
+            File parentFile = targetFile.getParentFile();
+            if (parentFile.exists() || parentFile.mkdirs()) {
+                doWriterTemplateFile(parentFile.getPath(), targetFile.getName(), tmplFile, properties);
+            }
+        } else {
+            getLog().warn("Skip existing file " + targetFile);
+        }
     }
 
     /**
