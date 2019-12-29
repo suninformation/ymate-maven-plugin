@@ -81,9 +81,9 @@
              connector should be using the OpenSSL style configuration
              described in the APR documentation -->
         <!--
-        <Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+        <Connector port="${redirect_port}" protocol="HTTP/1.1" SSLEnabled="true"
                    maxThreads="150" scheme="https" secure="true"
-                   clientAuth="false" sslProtocol="TLS" />
+                   clientAuth="false" sslProtocol="TLS" URIEncoding="UTF-8"/>
         -->
 
         <#if ajp><!-- Define an AJP 1.3 Connector on port 8009 -->

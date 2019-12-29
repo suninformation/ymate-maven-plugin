@@ -85,8 +85,8 @@
              the SSLImplementation selected. JSSE style configuration is used below.
         -->
         <!--
-        <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
-                   maxThreads="150" SSLEnabled="true">
+        <Connector port="${redirect_port}" protocol="org.apache.coyote.http11.Http11NioProtocol"
+                   maxThreads="150" SSLEnabled="true" URIEncoding="UTF-8">
             <SSLHostConfig>
                 <Certificate certificateKeystoreFile="conf/localhost-rsa.jks"
                              type="RSA" />
