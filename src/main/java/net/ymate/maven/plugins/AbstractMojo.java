@@ -22,6 +22,7 @@ import net.ymate.platform.commons.FreemarkerConfigBuilder;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.*;
@@ -52,6 +53,15 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
     @Parameter(defaultValue = "${project.version}")
     private String version;
 
+    @Parameter(property = "cfg")
+    private String cfgFile;
+
+    /**
+     * 是否覆盖已存在的文件
+     */
+    @Parameter(property = "overwrite")
+    private boolean overwrite;
+
     public AbstractMojo() {
         templateRootPath = AbstractMojo.class.getPackage().getName().replace(".", "/");
         try {
@@ -80,6 +90,14 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
             }
         }
         return null;
+    }
+
+    public IConfigReader loadConfigFile() throws MojoExecutionException {
+        IConfigReader configReader = cfgFile == null ? getDefaultConfigFileAsReader() : getConfigFileAsReader(cfgFile);
+        if (configReader == null) {
+            throw new MojoExecutionException(String.format("Configuration file '%s' does not exist!", RuntimeUtils.replaceEnvVariable(cfgFile)));
+        }
+        return configReader;
     }
 
     public void doWriterTemplateFile(String path, String fileName, String tmplFile, Map<String, Object> properties) throws IOException, TemplateException {
@@ -115,12 +133,6 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
         }
     }
 
-    /**
-     * 是否覆盖已存在的文件
-     */
-    @Parameter(property = "overwrite")
-    private boolean overwrite;
-
     public String getTemplateRootPath() {
         return templateRootPath;
     }
@@ -143,6 +155,10 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
 
     public String getVersion() {
         return version;
+    }
+
+    public String getCfgFile() {
+        return cfgFile;
     }
 
     public boolean isOverwrite() {

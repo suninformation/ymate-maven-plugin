@@ -20,19 +20,11 @@ import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.Application;
-import net.ymate.platform.core.ApplicationConfigureBuilder;
 import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.IApplicationConfigurer;
-import net.ymate.platform.core.configuration.IConfigReader;
-import net.ymate.platform.core.impl.DefaultApplicationConfigureParser;
-import net.ymate.platform.core.persistence.IPersistenceConfig;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
-import net.ymate.platform.persistence.jdbc.IDatabaseConfig;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
-import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseConfigurable;
-import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseDataSourceConfigurable;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -49,29 +41,18 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2018/3/27 下午6:25
  */
 @Mojo(name = "dbquery")
-public class DbQueryMojo extends AbstractMojo {
-
-    private static final String CONFIG_KEY_PREFIX = "ymp.configs.persistence.jdbc.ds.%s.%s";
+public class DbQueryMojo extends AbstractPersistenceMojo {
 
     private static final String SQL_TYPE_SELECT = "select";
 
     @Parameter(property = "sql", required = true)
     private String sql;
 
-    @Parameter(property = "format", defaultValue = "table")
-    private String format;
-
     @Parameter(property = "page", defaultValue = "0")
     private int page;
 
     @Parameter(property = "pageSize", defaultValue = "0")
     private int pageSize;
-
-    @Parameter(property = "cfg")
-    private String cfgFile;
-
-    @Parameter(property = "dataSource", defaultValue = IPersistenceConfig.DEFAULT_STR)
-    private String dataSource;
 
     @Parameter(property = "dateColumns")
     private String[] dateColumns;
@@ -82,24 +63,7 @@ public class DbQueryMojo extends AbstractMojo {
         if (!StringUtils.startsWithIgnoreCase(sql, SQL_TYPE_SELECT)) {
             throw new MojoExecutionException("Invalid SQL parameter value, only select query statement is supported!");
         }
-        IConfigReader configReader = cfgFile == null ? getDefaultConfigFileAsReader() : getConfigFileAsReader(cfgFile);
-        if (configReader == null) {
-            throw new MojoExecutionException(String.format("Configuration file '%s' does not exist!", RuntimeUtils.replaceEnvVariable(cfgFile)));
-        }
-        String connectionUrlKey = String.format(CONFIG_KEY_PREFIX, dataSource, IDatabaseConfig.CONNECTION_URL);
-        String connectionUrl = configReader.getString(connectionUrlKey);
-        if (StringUtils.isBlank(connectionUrl)) {
-            throw new MojoExecutionException(String.format("'%s' parameter is not set in the configuration file!", connectionUrlKey));
-        }
-        IApplicationConfigurer configurer = ApplicationConfigureBuilder.builder(DefaultApplicationConfigureParser.defaultEmpty()).runEnv(IApplication.Environment.DEV)
-                .addModuleConfigurers(DefaultDatabaseConfigurable.builder()
-                        .addDataSources(DefaultDatabaseDataSourceConfigurable.builder(IPersistenceConfig.DEFAULT_STR)
-                                .connectionUrl(connectionUrl)
-                                .username(configReader.getString(String.format(CONFIG_KEY_PREFIX, dataSource, IDatabaseConfig.USERNAME)))
-                                .password(configReader.getString(String.format(CONFIG_KEY_PREFIX, dataSource, IDatabaseConfig.PASSWORD)))
-                                .passwordEncrypted(configReader.getBoolean(String.format(CONFIG_KEY_PREFIX, dataSource, IDatabaseConfig.PASSWORD_ENCRYPTED)))
-                                .showSql(true).build()).build()).build();
-        try (IApplication application = new Application(configurer)) {
+        try (IApplication application = new Application(buildApplicationConfigurer())) {
             application.initialize();
             //
             List<String> columns = dateColumns != null ? Arrays.asList(dateColumns) : Collections.emptyList();
@@ -108,7 +72,7 @@ public class DbQueryMojo extends AbstractMojo {
             IResultSet<Object[]> resultSet = SQL.create(application.getModuleManager().getModule(JDBC.class), sql).find(IResultSetHandler.ARRAY, Page.createIfNeed(pageSize > 0 && page <= 0 ? 1 : page, page > 0 && pageSize <= 0 ? Page.DEFAULT_PAGE_SIZE : pageSize));
             if (resultSet.isResultsAvailable()) {
                 ResultSetHelper resultSetHelper = ResultSetHelper.bind(resultSet);
-                switch (StringUtils.lowerCase(format)) {
+                switch (StringUtils.lowerCase(getFormat())) {
                     case ConsoleTableBuilder.TYPE_CSV:
                         System.out.println(resultSetHelper.toCsv(columnRender));
                         break;
