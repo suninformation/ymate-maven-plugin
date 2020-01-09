@@ -53,7 +53,7 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
     @Parameter(defaultValue = "${project.version}")
     private String version;
 
-    @Parameter(property = "cfg")
+    @Parameter(property = "cfgFile")
     private String cfgFile;
 
     /**
@@ -93,9 +93,9 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
     }
 
     public IConfigReader loadConfigFile() throws MojoExecutionException {
-        IConfigReader configReader = cfgFile == null ? getDefaultConfigFileAsReader() : getConfigFileAsReader(cfgFile);
+        IConfigReader configReader = getCfgFile() == null ? getDefaultConfigFileAsReader() : getConfigFileAsReader(getCfgFile());
         if (configReader == null) {
-            throw new MojoExecutionException(String.format("Configuration file '%s' does not exist!", RuntimeUtils.replaceEnvVariable(cfgFile)));
+            throw new MojoExecutionException(String.format("Configuration file '%s' does not exist!", RuntimeUtils.replaceEnvVariable(getCfgFile())));
         }
         return configReader;
     }
@@ -116,8 +116,8 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
         if (!tmplFile.endsWith(".ftl")) {
             tmplFile = String.format("%s.ftl", tmplFile);
         }
-        try (Writer writer = new OutputStreamWriter(output, freemarkerConfig.getOutputEncoding())) {
-            freemarkerConfig.getTemplate(templateRootPath + tmplFile).process(properties, new BufferedWriter(writer));
+        try (Writer writer = new OutputStreamWriter(output, getFreemarkerConfig().getOutputEncoding())) {
+            getFreemarkerConfig().getTemplate(getTemplateRootPath() + tmplFile).process(properties, new BufferedWriter(writer));
         }
     }
 
