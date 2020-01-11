@@ -44,7 +44,7 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
     @Parameter(defaultValue = "${basedir}")
     private String basedir;
 
-    @Parameter(defaultValue = "${project.groupId}")
+    @Parameter(property = "packageName", defaultValue = "${project.groupId}")
     private String packageName;
 
     @Parameter(defaultValue = "${project.artifactId}")
