@@ -70,7 +70,7 @@ public class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first
     }
 
     @Override
-    public void close() {
+    public void close() throws Exception {
         if (initialized) {
             initialized = false;
             //
