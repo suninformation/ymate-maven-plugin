@@ -16,11 +16,11 @@ public class Default${moduleName?cap_first}Config implements I${moduleName?cap_f
 
     private boolean initialized;
 
-    public static I${moduleName?cap_first}Config defaultConfig() {
+    public static Default${moduleName?cap_first}Config defaultConfig() {
         return builder().build();
     }
 
-    public static I${moduleName?cap_first}Config create(IModuleConfigurer moduleConfigurer) {
+    public static Default${moduleName?cap_first}Config create(IModuleConfigurer moduleConfigurer) {
         return new Default${moduleName?cap_first}Config(moduleConfigurer);
     }
 
@@ -77,7 +77,7 @@ public class Default${moduleName?cap_first}Config implements I${moduleName?cap_f
             return this;
         }
 
-        public I${moduleName?cap_first}Config build() {
+        public Default${moduleName?cap_first}Config build() {
             return config;
         }
     }
