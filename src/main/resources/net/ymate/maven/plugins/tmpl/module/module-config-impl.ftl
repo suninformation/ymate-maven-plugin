@@ -43,7 +43,7 @@ public class Default${moduleName?cap_first}Config implements I${moduleName?cap_f
     public void initialize(I${moduleName?cap_first} owner) throws Exception {
         if (!initialized) {
             if (enabled) {
-                // TOD What to do?
+                // TODO What to do?
             }
             initialized = true;
         }
