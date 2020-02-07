@@ -13,7 +13,7 @@ import net.ymate.platform.core.module.impl.DefaultModuleConfigurable;
 public class Default${moduleName?cap_first}Configurable extends DefaultModuleConfigurable {
 
     public static Builder builder() {
-        return new DefaultDocsConfigurable.Builder();
+        return new Builder();
     }
 
     private Default${moduleName?cap_first}Configurable() {
