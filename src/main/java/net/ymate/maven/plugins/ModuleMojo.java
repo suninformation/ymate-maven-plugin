@@ -58,6 +58,7 @@ public class ModuleMojo extends AbstractMojo {
             doWriterTemplateFile(new File(path, String.format("%s.java", name)), "/module/module-class", properties);
             doWriterTemplateFile(new File(path, String.format("I%sConfig.java", name)), "/module/module-config", properties);
             doWriterTemplateFile(new File(path, String.format("impl/Default%sConfig.java", name)), "/module/module-config-impl", properties);
+            doWriterTemplateFile(new File(path, String.format("impl/Default%sConfigurable.java", name)), "/module/module-configurable-impl", properties);
             //
             path = new File(String.format("%s/src/main/resources/META-INF/services/internal/net.ymate.platform.core.module.IModule", getBasedir()));
             String charset = "UTF-8";
