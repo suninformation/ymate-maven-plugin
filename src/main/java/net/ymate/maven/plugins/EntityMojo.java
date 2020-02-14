@@ -129,7 +129,6 @@ public class EntityMojo extends AbstractPersistenceMojo {
         File parentFile = outputFile.getParentFile();
         if (parentFile.exists() || parentFile.mkdirs()) {
             doWriterTemplateFile(outputFile, tmplFile, properties);
-            getLog().info(String.format("Output file %s", outputFile));
         }
     }
 }
