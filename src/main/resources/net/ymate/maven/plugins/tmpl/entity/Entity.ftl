@@ -9,6 +9,7 @@ import net.ymate.platform.core.persistence.annotation.Property;
 import net.ymate.platform.core.persistence.annotation.Readonly;<#if (!config.useBaseEntity)>
 import net.ymate.platform.persistence.jdbc.support.BaseEntity;
 import net.ymate.platform.core.persistence.IShardingable;
+import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;</#if>
 
 /**
@@ -35,12 +36,27 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>() {
     }
 
+<#if (!config.useBaseEntity)>
+    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase owner) {
+        super(owner);
+    }
+</#if>
+
 <#if (entityInfo.nonNullableFields?size > 0)>
     public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(<#list entityInfo.nonNullableFields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
     <#list entityInfo.nonNullableFields as field>
         this.${field.varName} = ${field.varName};
     </#list>
     }
+
+    <#if (!config.useBaseEntity)>
+        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase owner, <#list entityInfo.nonNullableFields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
+            super(owner);
+        <#list entityInfo.nonNullableFields as field>
+            this.${field.varName} = ${field.varName};
+        </#list>
+        }
+    </#if>
 </#if>
 
     public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(<#list entityInfo.fields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
@@ -48,6 +64,15 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
         this.${field.varName} = ${field.varName};
     </#list>
     }
+
+<#if (!config.useBaseEntity)>
+    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase owner, <#list entityInfo.fields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
+        super(owner);
+    <#list entityInfo.fields as field>
+        this.${field.varName} = ${field.varName};
+    </#list>
+    }
+</#if>
 
     @Override
     public ${entityInfo.primaryKeyType} getId() {
@@ -80,13 +105,19 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
 </#list>
 
 <#if (config.useChainMode)>
+    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder bind() {
+        return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(this);
+    }
+
     public static ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder builder() {
         return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder();
     }
 
-    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder bind() {
-        return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(this);
-    }
+    <#if (!config.useBaseEntity)>
+        public static ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder builder(IDatabase owner) {
+            return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(owner);
+        }
+    </#if>
 
     public static class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder {
 
@@ -95,6 +126,12 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
         public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder() {
             targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>();
         }
+
+    <#if (!config.useBaseEntity)>
+        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(IDatabase owner) {
+            targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(owner);
+        }
+    </#if>
 
         public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> targetEntity) {
             this.targetEntity = targetEntity;
