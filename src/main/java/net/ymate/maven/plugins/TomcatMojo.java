@@ -38,7 +38,7 @@ public class TomcatMojo extends AbstractMojo {
     /**
      * 需要创建的目录列表
      */
-    private static String[] NEED_MK_DIRS = {
+    private static final String[] NEED_MK_DIRS = {
             "bin",
             "conf",
             "logs",
@@ -51,7 +51,7 @@ public class TomcatMojo extends AbstractMojo {
     /**
      * 需要复制的配置文件列表
      */
-    private static String[] NEED_COPY_FILES = {
+    private static final String[] NEED_COPY_FILES = {
             "conf/catalina.policy",
             "conf/catalina.properties",
             "conf/logging.properties",
@@ -63,7 +63,7 @@ public class TomcatMojo extends AbstractMojo {
     /**
      * Tomcat8/9需要复制的文件列表
      */
-    private static String[] V8_COPY_FILES = {
+    private static final String[] V8_COPY_FILES = {
             "conf/jaspic-providers.xml",
             "conf/jaspic-providers.xsd",
             "conf/tomcat-users.xsd"

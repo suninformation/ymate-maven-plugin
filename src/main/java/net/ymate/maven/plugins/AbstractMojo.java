@@ -22,10 +22,17 @@ import net.ymate.platform.commons.FreemarkerConfigBuilder;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -131,6 +138,15 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
         } else {
             getLog().warn("Skip existing file " + targetFile);
         }
+    }
+
+    public URLClassLoader buildRuntimeClassLoader(MavenProject mavenProject) throws MalformedURLException {
+        List<URL> urls = new ArrayList<>();
+        urls.add(new File(mavenProject.getBuild().getOutputDirectory()).toURI().toURL());
+        for (Artifact dependency : mavenProject.getArtifacts()) {
+            urls.add(dependency.getFile().toURI().toURL());
+        }
+        return new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader());
     }
 
     public String getTemplateRootPath() {
