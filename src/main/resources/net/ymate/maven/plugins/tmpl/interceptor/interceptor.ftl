@@ -11,10 +11,11 @@ import net.ymate.platform.core.beans.intercept.InterceptException;
  * @author YMP (https://www.ymate.net/)
  */
 @Interceptor(${interceptorName?cap_first}.class)
-public class ${interceptorName?cap_first}Interceptor extends AbstractInterceptor {
+public final class ${interceptorName?cap_first}Interceptor extends AbstractInterceptor {
 
     @Override
     protected Object before(InterceptContext context) throws InterceptException {
+        ${interceptorName?cap_first} ann = findInterceptAnnotation(context, ${interceptorName?cap_first}.class);
         // TODO What to do?
         return null;
     }
