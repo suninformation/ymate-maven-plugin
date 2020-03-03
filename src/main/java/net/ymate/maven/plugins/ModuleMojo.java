@@ -51,6 +51,11 @@ public class ModuleMojo extends AbstractMojo {
         properties.put("packageName", getPackageName());
         properties.put("moduleArtifactId", getProjectName());
         //
+        getLog().info("properties:");
+        getLog().info("\t|--moduleName:" + name);
+        getLog().info("\t|--packageName:" + getPackageName());
+        getLog().info("\t|--moduleArtifactId:" + getProjectName());
+        //
         try {
             File path = new File(String.format("%s/src/main/java", getBasedir()), getPackageName().replace(".", "/"));
             //
