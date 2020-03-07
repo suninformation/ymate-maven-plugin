@@ -63,7 +63,7 @@ public class DbQueryMojo extends AbstractPersistenceMojo {
         if (!StringUtils.startsWithIgnoreCase(sql, SQL_TYPE_SELECT)) {
             throw new MojoExecutionException("Invalid SQL parameter value, only select query statement is supported!");
         }
-        try (IApplication application = new Application(buildApplicationConfigurer())) {
+        try (IApplication application = new Application(buildApplicationConfigureFactory())) {
             application.initialize();
             //
             List<String> columns = dateColumns != null ? Arrays.asList(dateColumns) : Collections.emptyList();

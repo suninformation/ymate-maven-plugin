@@ -15,9 +15,7 @@
  */
 package net.ymate.maven.plugins;
 
-import net.ymate.platform.core.ApplicationConfigureBuilder;
-import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.IApplicationConfigurer;
+import net.ymate.platform.core.*;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.impl.DefaultApplicationConfigureParser;
 import net.ymate.platform.core.persistence.IPersistenceConfig;
@@ -44,7 +42,7 @@ public abstract class AbstractPersistenceMojo extends AbstractMojo {
     @Parameter(property = "format", defaultValue = "table")
     private String format;
 
-    public IApplicationConfigurer buildApplicationConfigurer() throws MojoExecutionException {
+    public IApplicationConfigureFactory buildApplicationConfigureFactory() throws MojoExecutionException {
         IConfigReader configReader = loadConfigFile();
         //
         String connectionUrlKey = String.format(CONFIG_KEY_PREFIX, dataSource, IDatabaseConfig.CONNECTION_URL);
@@ -52,7 +50,7 @@ public abstract class AbstractPersistenceMojo extends AbstractMojo {
         if (StringUtils.isBlank(connectionUrl)) {
             throw new MojoExecutionException(String.format("'%s' parameter is not set in the configuration file!", connectionUrlKey));
         }
-        return ApplicationConfigureBuilder.builder(DefaultApplicationConfigureParser.defaultEmpty()).runEnv(IApplication.Environment.DEV)
+        IApplicationConfigurer configurer = ApplicationConfigureBuilder.builder(DefaultApplicationConfigureParser.defaultEmpty()).runEnv(IApplication.Environment.DEV)
                 .addModuleConfigurers(DefaultDatabaseConfigurable.builder()
                         .addDataSources(DefaultDatabaseDataSourceConfigurable.builder(IPersistenceConfig.DEFAULT_STR)
                                 .connectionUrl(connectionUrl)
@@ -61,6 +59,13 @@ public abstract class AbstractPersistenceMojo extends AbstractMojo {
                                 .passwordEncrypted(configReader.getBoolean(String.format(CONFIG_KEY_PREFIX, dataSource, IDatabaseConfig.PASSWORD_ENCRYPTED)))
                                 .showSql(true).build()).build())
                 .addParameters(configReader.getMap("ymp.params.")).build();
+        return new AbstractApplicationConfigureFactory() {
+
+            @Override
+            public IApplicationConfigurer getConfigurer() {
+                return configurer;
+            }
+        };
     }
 
     public String getDataSource() {

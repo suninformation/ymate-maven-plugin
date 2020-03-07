@@ -58,7 +58,7 @@ public class EntityMojo extends AbstractPersistenceMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try (IApplication application = new Application(buildApplicationConfigurer())) {
+        try (IApplication application = new Application(buildApplicationConfigureFactory())) {
             application.initialize();
             //
             doCreateEntityClassFiles(application.getModuleManager().getModule(JDBC.class), Scaffold.builder(application).build(), view);

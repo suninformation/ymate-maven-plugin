@@ -66,7 +66,7 @@ public class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first
             //
             this.owner = owner;
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigurer().getModuleConfigurer(MODULE_NAME);
+                IModuleConfigurer moduleConfigurer = owner.getConfigureFactory().getConfigurer().getModuleConfigurer(MODULE_NAME);
                 config = moduleConfigurer == null ? Default${moduleName?cap_first}Config.defaultConfig() : Default${moduleName?cap_first}Config.create(moduleConfigurer);
             }
             if (!config.isInitialized()) {
