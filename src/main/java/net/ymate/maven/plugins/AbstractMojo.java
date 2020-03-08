@@ -22,6 +22,7 @@ import net.ymate.platform.commons.FreemarkerConfigBuilder;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -63,6 +64,9 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
     @Parameter(property = "cfgFile")
     private String cfgFile;
 
+    @Parameter(property = "dev")
+    private boolean dev;
+
     /**
      * 是否覆盖已存在的文件
      */
@@ -80,7 +84,16 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
     }
 
     public IConfigReader getDefaultConfigFileAsReader() {
-        return getConfigFileAsReader(new File(basedir, "/src/main/resources/ymp-conf.properties").getPath());
+        File targetFile = new File(basedir, String.format("/src/main/resources/ymp-conf%s.properties", dev ? "_DEV" : StringUtils.EMPTY));
+        if (!targetFile.exists()) {
+            if (dev) {
+                targetFile = new File(basedir, "/src/main/resources/ymp-conf.properties");
+            }
+            if (!targetFile.exists()) {
+                return null;
+            }
+        }
+        return getConfigFileAsReader(targetFile.getPath());
     }
 
     public IConfigReader getConfigFileAsReader(String confFilePath) {
@@ -102,7 +115,7 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
     public IConfigReader loadConfigFile() throws MojoExecutionException {
         IConfigReader configReader = getCfgFile() == null ? getDefaultConfigFileAsReader() : getConfigFileAsReader(getCfgFile());
         if (configReader == null) {
-            throw new MojoExecutionException(String.format("Configuration file '%s' does not exist!", RuntimeUtils.replaceEnvVariable(getCfgFile())));
+            throw new MojoExecutionException("Configuration file 'ymp-conf.properties' not found!");
         }
         return configReader;
     }
@@ -175,6 +188,10 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
 
     public String getCfgFile() {
         return cfgFile;
+    }
+
+    public boolean isDev() {
+        return dev;
     }
 
     public boolean isOverwrite() {
