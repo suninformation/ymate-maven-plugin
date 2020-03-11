@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author YMP (https://www.ymate.net/)
  */
-public class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first} {
+public final class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first} {
 
     private static final Log LOG = LogFactory.getLog(${moduleName?cap_first}.class);
 

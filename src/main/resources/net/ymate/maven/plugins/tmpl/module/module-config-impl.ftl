@@ -26,7 +26,7 @@ import net.ymate.platform.core.module.IModuleConfigurer;
  *
  * @author YMP (https://www.ymate.net/)
  */
-public class Default${moduleName?cap_first}Config implements I${moduleName?cap_first}Config {
+public final class Default${moduleName?cap_first}Config implements I${moduleName?cap_first}Config {
 
     private boolean enabled = true;
 

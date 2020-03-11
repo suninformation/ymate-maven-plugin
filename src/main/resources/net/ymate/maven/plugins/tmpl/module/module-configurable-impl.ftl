@@ -25,7 +25,7 @@ import net.ymate.platform.core.module.impl.DefaultModuleConfigurable;
  *
  * @author YMP (https://www.ymate.net/)
  */
-public class Default${moduleName?cap_first}Configurable extends DefaultModuleConfigurable {
+public final class Default${moduleName?cap_first}Configurable extends DefaultModuleConfigurable {
 
     public static Builder builder() {
         return new Builder();
