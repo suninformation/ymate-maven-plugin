@@ -17,9 +17,12 @@ package ${packageName};
 
 import ${packageName}.impl.Default${moduleName?cap_first}Config;
 import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigureFactory;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,6 +56,13 @@ public class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first
         return inst;
     }
 
+    public ${moduleName?cap_first}() {
+    }
+
+    public ${moduleName?cap_first}(I${moduleName?cap_first}Config config) {
+        this.config = config;
+    }
+
     @Override
     public String getName() {
         return MODULE_NAME;
@@ -66,8 +76,19 @@ public class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first
             //
             this.owner = owner;
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigureFactory().getConfigurer().getModuleConfigurer(MODULE_NAME);
-                config = moduleConfigurer == null ? Default${moduleName?cap_first}Config.defaultConfig() : Default${moduleName?cap_first}Config.create(moduleConfigurer);
+                IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+                if (configureFactory != null) {
+                    IApplicationConfigurer configurer = configureFactory.getConfigurer();
+                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
+                    if (moduleConfigurer != null) {
+                        config = Default${moduleName?cap_first}Config.create(configureFactory.getMainClass(), moduleConfigurer);
+                    } else {
+                        config = Default${moduleName?cap_first}Config.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
+                    }
+                }
+                if (config == null) {
+                    config = Default${moduleName?cap_first}Config.defaultConfig();
+                }
             }
             if (!config.isInitialized()) {
                 config.initialize(this);

@@ -62,6 +62,7 @@ public class ModuleMojo extends AbstractMojo {
             doWriterTemplateFile(new File(path, String.format("I%s.java", name)), "/module/module-interface", properties);
             doWriterTemplateFile(new File(path, String.format("%s.java", name)), "/module/module-class", properties);
             doWriterTemplateFile(new File(path, String.format("I%sConfig.java", name)), "/module/module-config", properties);
+            doWriterTemplateFile(new File(path, String.format("annotation/%sConf.java", name)), "/module/module-annotation", properties);
             doWriterTemplateFile(new File(path, String.format("impl/Default%sConfig.java", name)), "/module/module-config-impl", properties);
             doWriterTemplateFile(new File(path, String.format("impl/Default%sConfigurable.java", name)), "/module/module-configurable-impl", properties);
             //

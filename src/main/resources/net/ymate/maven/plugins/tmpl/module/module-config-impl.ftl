@@ -17,6 +17,7 @@ package ${packageName}.impl;
 
 import ${packageName}.I${moduleName?cap_first};
 import ${packageName}.I${moduleName?cap_first}Config;
+import ${packageName}.annotation.${moduleName?cap_first}Conf;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 
@@ -36,7 +37,11 @@ public class Default${moduleName?cap_first}Config implements I${moduleName?cap_f
     }
 
     public static Default${moduleName?cap_first}Config create(IModuleConfigurer moduleConfigurer) {
-        return new Default${moduleName?cap_first}Config(moduleConfigurer);
+        return new Default${moduleName?cap_first}Config(null, moduleConfigurer);
+    }
+
+    public static Default${moduleName?cap_first}Config create(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return new Default${moduleName?cap_first}Config(mainClass, moduleConfigurer);
     }
 
     public static Builder builder() {
@@ -46,10 +51,12 @@ public class Default${moduleName?cap_first}Config implements I${moduleName?cap_f
     private Default${moduleName?cap_first}Config() {
     }
 
-    private Default${moduleName?cap_first}Config(IModuleConfigurer moduleConfigurer) {
+    private Default${moduleName?cap_first}Config(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
         IConfigReader configReader = moduleConfigurer.getConfigReader();
         //
-        enabled = configReader.getBoolean(ENABLED, true);
+        ${moduleName?cap_first}Conf confAnn = mainClass == null ? null : mainClass.getAnnotation(${moduleName?cap_first}Conf.class);
+        //
+        enabled = configReader.getBoolean(ENABLED, confAnn == null || confAnn.enabled() );
         //
         // TODO What to do?
     }
