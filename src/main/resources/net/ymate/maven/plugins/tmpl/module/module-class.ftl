@@ -19,6 +19,7 @@ import ${packageName}.impl.Default${moduleName?cap_first}Config;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.IApplicationConfigureFactory;
 import net.ymate.platform.core.IApplicationConfigurer;
+import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
@@ -72,7 +73,7 @@ public final class ${moduleName?cap_first} implements IModule, I${moduleName?cap
     public void initialize(IApplication owner) throws Exception {
         if (!initialized) {
             //
-            YMP.showModuleVersion("${moduleArtifactId}-${moduleName?lower_case}", this);
+            YMP.showVersion("Initializing ${moduleArtifactId}-${moduleName?lower_case}-${r'${version}'}", new Version(1, 0, 0, Version.VersionType.Alpha));
             //
             this.owner = owner;
             if (config == null) {
