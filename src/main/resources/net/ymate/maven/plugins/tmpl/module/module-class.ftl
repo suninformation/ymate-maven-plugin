@@ -73,7 +73,7 @@ public final class ${moduleName?cap_first} implements IModule, I${moduleName?cap
     public void initialize(IApplication owner) throws Exception {
         if (!initialized) {
             //
-            YMP.showVersion("Initializing ${moduleArtifactId}-${moduleName?lower_case}-${r'${version}'}", new Version(1, 0, 0, Version.VersionType.Alpha));
+            YMP.showVersion("Initializing ${moduleArtifactId}-${moduleName?lower_case}-${r'${version}'}", new Version(1, 0, 0, ${moduleName?cap_first}.class, Version.VersionType.Alpha));
             //
             this.owner = owner;
             if (config == null) {
