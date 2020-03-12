@@ -21,15 +21,17 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.Application;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConfig;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.scaffold.EntityInfo;
+import net.ymate.platform.persistence.jdbc.scaffold.INamedFilter;
 import net.ymate.platform.persistence.jdbc.scaffold.Scaffold;
 import net.ymate.platform.persistence.jdbc.scaffold.TableInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,8 +43,12 @@ import java.util.Map;
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-12-24 11:38
  */
-@Mojo(name = "entity")
+@Mojo(name = "entity", requiresDependencyResolution = ResolutionScope.RUNTIME, requiresDependencyCollection = ResolutionScope.RUNTIME)
+@Execute(phase = LifecyclePhase.COMPILE)
 public class EntityMojo extends AbstractPersistenceMojo {
+
+    @Parameter(required = true, readonly = true, defaultValue = "${project}")
+    private MavenProject mavenProject;
 
     /**
      * 是否为视图
@@ -61,7 +67,12 @@ public class EntityMojo extends AbstractPersistenceMojo {
         try (IApplication application = new Application(buildApplicationConfigureFactory())) {
             application.initialize();
             //
-            doCreateEntityClassFiles(application.getModuleManager().getModule(JDBC.class), Scaffold.builder(application).build(), view);
+            Scaffold.Builder builder = Scaffold.builder(application, false);
+            String namedFilterClass = application.getParam(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS);
+            if (StringUtils.isNotBlank(namedFilterClass)) {
+                builder.namedFilter((INamedFilter) buildRuntimeClassLoader(mavenProject).loadClass(namedFilterClass).newInstance());
+            }
+            doCreateEntityClassFiles(application.getModuleManager().getModule(JDBC.class), builder.build(), view);
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         }
