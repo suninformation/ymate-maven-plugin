@@ -42,7 +42,7 @@ import java.util.Properties;
  */
 public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo {
 
-    private String templateRootPath;
+    private final String templateRootPath;
 
     private Configuration freemarkerConfig;
 
