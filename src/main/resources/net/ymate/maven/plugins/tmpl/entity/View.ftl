@@ -49,8 +49,8 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     }
 
 <#if (!config.useBaseEntity)>
-    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase owner) {
-        super(owner);
+    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase dbOwner) {
+        super(dbOwner);
     }
 </#if>
 
@@ -96,8 +96,8 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     }
 
     <#if (!config.useBaseEntity)>
-        public static ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder builder(IDatabase owner) {
-            return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(owner);
+        public static ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder builder(IDatabase dbOwner) {
+            return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(dbOwner);
         }
     </#if>
 
@@ -110,8 +110,8 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
         }
 
     <#if (!config.useBaseEntity)>
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(IDatabase owner) {
-            targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(owner);
+        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(IDatabase dbOwner) {
+            targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(dbOwner);
         }
     </#if>
 

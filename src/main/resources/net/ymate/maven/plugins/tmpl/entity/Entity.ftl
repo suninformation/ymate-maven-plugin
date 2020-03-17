@@ -52,12 +52,12 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     }
 
 <#if (!config.useBaseEntity)>
-    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase owner) {
-        super(owner);
+    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase dbOwner) {
+        super(dbOwner);
     }
 </#if>
 
-<#if (entityInfo.nonNullableFields?size > 0)>
+<#if (entityInfo.nonNullableFields?size > 0 && entityInfo.nonNullableFields?size != entityInfo.fields?size)>
     public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(<#list entityInfo.nonNullableFields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
     <#list entityInfo.nonNullableFields as field>
         this.${field.varName} = ${field.varName};
@@ -65,8 +65,8 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     }
 
     <#if (!config.useBaseEntity)>
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase owner, <#list entityInfo.nonNullableFields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
-            super(owner);
+        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase dbOwner, <#list entityInfo.nonNullableFields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
+            super(dbOwner);
         <#list entityInfo.nonNullableFields as field>
             this.${field.varName} = ${field.varName};
         </#list>
@@ -81,8 +81,8 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     }
 
 <#if (!config.useBaseEntity)>
-    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase owner, <#list entityInfo.fields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
-        super(owner);
+    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(IDatabase dbOwner, <#list entityInfo.fields as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
+        super(dbOwner);
     <#list entityInfo.fields as field>
         this.${field.varName} = ${field.varName};
     </#list>
@@ -129,8 +129,8 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     }
 
     <#if (!config.useBaseEntity)>
-        public static ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder builder(IDatabase owner) {
-            return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(owner);
+        public static ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder builder(IDatabase dbOwner) {
+            return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(dbOwner);
         }
     </#if>
 
@@ -143,8 +143,8 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
         }
 
     <#if (!config.useBaseEntity)>
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(IDatabase owner) {
-            targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(owner);
+        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(IDatabase dbOwner) {
+            targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(dbOwner);
         }
     </#if>
 
