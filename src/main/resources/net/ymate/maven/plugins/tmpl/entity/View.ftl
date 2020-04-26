@@ -103,7 +103,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
 
     public static class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder {
 
-        private ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> targetEntity;
+        private final ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> targetEntity;
 
         public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder() {
             targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>();
