@@ -62,6 +62,9 @@ public class EntityMojo extends AbstractPersistenceMojo {
     @Parameter(property = "showOnly")
     private boolean showOnly;
 
+    @Parameter(property = "beanOnly")
+    private boolean beanOnly;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try (IApplication application = new Application(buildApplicationConfigureFactory())) {
@@ -93,10 +96,14 @@ public class EntityMojo extends AbstractPersistenceMojo {
                     EntityInfo entityInfo = scaffold.buildEntityInfo(tableInfo);
                     properties.put("entityInfo", entityInfo);
                     //
-                    String finalEntityName = String.format("%s%s", entityInfo.getName(), scaffold.isUseClassSuffix() ? StringUtils.capitalize(scaffold.getClassSuffix()) : StringUtils.EMPTY);
-                    doWriteTargetFile(scaffold, String.format("/%s/%s.java", StringUtils.lowerCase(scaffold.getClassSuffix()), finalEntityName), view ? "/entity/View" : "/entity/Entity", properties);
-                    if (!view && tableInfo.getPrimaryKeys().size() > 1) {
-                        doWriteTargetFile(scaffold, String.format("/%s/%sPK.java", StringUtils.lowerCase(scaffold.getClassSuffix()), entityInfo.getName()), "/entity/EntityPK", properties);
+                    if (beanOnly) {
+                        doWriteTargetFile(scaffold, String.format("/%s/%sBean.java", StringUtils.lowerCase(scaffold.getClassSuffix()), entityInfo.getName()), "/entity/Bean", properties);
+                    } else {
+                        String finalEntityName = String.format("%s%s", entityInfo.getName(), scaffold.isUseClassSuffix() ? StringUtils.capitalize(scaffold.getClassSuffix()) : StringUtils.EMPTY);
+                        doWriteTargetFile(scaffold, String.format("/%s/%s.java", StringUtils.lowerCase(scaffold.getClassSuffix()), finalEntityName), view ? "/entity/View" : "/entity/Entity", properties);
+                        if (!view && tableInfo.getPrimaryKeys().size() > 1) {
+                            doWriteTargetFile(scaffold, String.format("/%s/%sPK.java", StringUtils.lowerCase(scaffold.getClassSuffix()), entityInfo.getName()), "/entity/EntityPK", properties);
+                        }
                     }
                 } else {
                     ConsoleTableBuilder consoleTableBuilder = ConsoleTableBuilder.create(10).escape();
