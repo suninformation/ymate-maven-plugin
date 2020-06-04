@@ -27,12 +27,18 @@ public class ${entityInfo.name?cap_first}Bean implements Serializable {
     private static final long serialVersionUID = 1L;
 
 <#list entityInfo.primaryKeys as field>
+    <#if (field.remarks!"undefined") != "undefined">/**
+     * ${field.remarks}
+     */</#if>
     private ${field.varType} ${field.varName};
 
 </#list>
 
 <#list entityInfo.fields as field>
     <#if field.varName != entityInfo.primaryKeyName || (entityInfo.primaryKeys?size == 0)>
+    <#if (field.remarks!"undefined") != "undefined">/**
+     * ${field.remarks}
+     */</#if>
     private ${field.varType} ${field.varName};
 
     </#if>
