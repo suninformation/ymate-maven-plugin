@@ -15,6 +15,7 @@
  */
 package ${config.packageName}.${config.classSuffix?lower_case};
 
+<#if (apidocs)>import net.ymate.apidocs.annotation.ApiProperty;</#if>
 import java.io.Serializable;
 
 /**
@@ -30,6 +31,7 @@ public class ${entityInfo.name?cap_first}Bean implements Serializable {
     <#if (field.remarks!"undefined") != "undefined">/**
      * ${field.remarks}
      */</#if>
+    <#if (apidocs)>@ApiProperty(description = "${field.remarks!"undefined"}", demoValue = "")</#if>
     private ${field.varType} ${field.varName};
 
 </#list>
@@ -39,6 +41,7 @@ public class ${entityInfo.name?cap_first}Bean implements Serializable {
     <#if (field.remarks!"undefined") != "undefined">/**
      * ${field.remarks}
      */</#if>
+    <#if (apidocs)>@ApiProperty(description = "${field.remarks!"undefined"}", demoValue = "")</#if>
     private ${field.varType} ${field.varName};
 
     </#if>

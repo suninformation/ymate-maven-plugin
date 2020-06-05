@@ -65,6 +65,9 @@ public class EntityMojo extends AbstractPersistenceMojo {
     @Parameter(property = "beanOnly")
     private boolean beanOnly;
 
+    @Parameter(property = "apidocs")
+    private boolean apidocs;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try (IApplication application = new Application(buildApplicationConfigureFactory())) {
@@ -86,6 +89,7 @@ public class EntityMojo extends AbstractPersistenceMojo {
         if (!tableInfos.isEmpty()) {
             Map<String, Object> properties = new HashMap<>(16);
             properties.put("config", scaffold);
+            properties.put("apidocs", apidocs);
             properties.put("lastUpdateTime", new Date());
             //
             if (!showOnly && scaffold.isUseBaseEntity()) {
