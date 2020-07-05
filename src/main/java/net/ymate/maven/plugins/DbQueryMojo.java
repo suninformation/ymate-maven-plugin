@@ -24,7 +24,7 @@ import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+import net.ymate.platform.persistence.jdbc.base.impl.ArrayResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -69,7 +69,7 @@ public class DbQueryMojo extends AbstractPersistenceMojo {
             List<String> columns = dateColumns != null ? Arrays.asList(dateColumns) : Collections.emptyList();
             ResultSetHelper.ColumnRender columnRender = columns.isEmpty() ? null : (columnName, value) -> columns.contains(columnName) ? DateTimeUtils.formatTime(BlurObject.bind(value).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS) : value;
             //
-            IResultSet<Object[]> resultSet = SQL.create(application.getModuleManager().getModule(JDBC.class), sql).find(IResultSetHandler.ARRAY, Page.createIfNeed(pageSize > 0 && page <= 0 ? 1 : page, page > 0 && pageSize <= 0 ? Page.DEFAULT_PAGE_SIZE : pageSize));
+            IResultSet<Object[]> resultSet = SQL.create(application.getModuleManager().getModule(JDBC.class), sql).find(new ArrayResultSetHandler(), Page.createIfNeed(pageSize > 0 && page <= 0 ? 1 : page, page > 0 && pageSize <= 0 ? Page.DEFAULT_PAGE_SIZE : pageSize));
             if (resultSet.isResultsAvailable()) {
                 ResultSetHelper resultSetHelper = ResultSetHelper.bind(resultSet);
                 switch (StringUtils.lowerCase(getFormat())) {
