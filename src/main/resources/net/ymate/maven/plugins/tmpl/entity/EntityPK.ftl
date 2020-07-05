@@ -63,4 +63,42 @@ public class ${entityInfo.name?cap_first}PK implements IEntityPK {
     }
 
 </#list>
+<#if (config.useChainMode)>
+    public Builder bind() {
+        return new Builder(this);
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+    private final ${entityInfo.name?cap_first}PK targetPK;
+
+    public Builder() {
+        targetPK = new ${entityInfo.name?cap_first}PK();
+    }
+
+    public Builder(${entityInfo.name?cap_first}PK targetPK) {
+        this.targetPK = targetPK;
+    }
+
+    public ${entityInfo.name?cap_first}PK build() {
+        return targetPK;
+    }
+
+    <#list entityInfo.primaryKeys as field>
+
+        public ${field.varType} ${field.varName}() {
+            return targetPK.get${field.varName?cap_first}();
+        }
+
+        public Builder ${field.varName}(${field.varType} ${field.varName}) {
+            targetPK.set${field.varName?cap_first}(${field.varName});
+            return this;
+        }
+    </#list>
+    }
+</#if>
 }
