@@ -44,7 +44,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2019-12-24 11:38
  */
 @Mojo(name = "entity", requiresDependencyResolution = ResolutionScope.RUNTIME, requiresDependencyCollection = ResolutionScope.RUNTIME)
-@Execute(phase = LifecyclePhase.COMPILE)
+//@Execute(phase = LifecyclePhase.COMPILE)
 public class EntityMojo extends AbstractPersistenceMojo {
 
     @Parameter(required = true, readonly = true, defaultValue = "${project}")

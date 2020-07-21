@@ -28,7 +28,7 @@ import org.apache.maven.project.MavenProject;
  * @author 刘镇 (suninformation@163.com) on 2016/12/17 05:52
  */
 @Mojo(name = "encrypt", requiresDependencyResolution = ResolutionScope.RUNTIME, requiresDependencyCollection = ResolutionScope.RUNTIME)
-@Execute(phase = LifecyclePhase.COMPILE)
+//@Execute(phase = LifecyclePhase.COMPILE)
 public class EncryptMojo extends AbstractMojo {
 
     @Parameter(required = true, readonly = true, defaultValue = "${project}")
