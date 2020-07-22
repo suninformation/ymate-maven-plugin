@@ -41,10 +41,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -70,6 +67,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
     @Parameter(property = "fromDb")
     private boolean fromDb;
 
+    @Parameter(property = "simple")
+    private boolean simple;
+
     @Parameter(property = "apidocs")
     private boolean apidocs;
 
@@ -82,7 +82,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            File cfgFile = new File(getBasedir(), StringUtils.defaultIfBlank(file, DEFAULT_CRUD_FILE));
+            File cfgFile = defaultCfgFileIfNeed(null);
             if (cfgFile.exists()) {
                 if (!cfgFile.isFile()) {
                     getLog().warn("It's not a file " + cfgFile);
@@ -90,6 +90,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 }
                 if (fromDb) {
                     buildCrudFromDb(cfgFile);
+                } else if (simple) {
+                    buildCrudSimple(cfgFile);
                 } else {
                     InputStream inputStream = new FileInputStream(cfgFile);
                     CApplication cApp = JsonWrapper.deserialize(IOUtils.toByteArray(inputStream), CApplication.class);
@@ -155,6 +157,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 }
             } else if (fromDb) {
                 buildCrudFromDb(cfgFile);
+            } else if (simple) {
+                buildCrudSimple(cfgFile);
             } else {
                 getLog().warn(String.format("File '%s' does not exist.", cfgFile.getAbsolutePath()));
             }
@@ -163,31 +167,85 @@ public class CrudMojo extends AbstractPersistenceMojo {
         }
     }
 
-    private void buildCrudFromDb(File cfgFile) throws Exception {
+    private File defaultCfgFileIfNeed(File cfgFile) {
         if (cfgFile == null) {
             cfgFile = new File(getBasedir(), StringUtils.defaultIfBlank(file, DEFAULT_CRUD_FILE));
         }
+        return cfgFile;
+    }
+
+    private boolean checkCfgFile(File cfgFile) {
+        boolean checked = true;
         if (cfgFile.exists()) {
             if (!cfgFile.isFile()) {
                 getLog().warn("It's not a file " + cfgFile);
-                return;
+                checked = false;
             }
             if (!isOverwrite()) {
                 getLog().warn("Skip existing file " + cfgFile);
-                return;
+                checked = false;
             }
         }
-        try (IApplication application = new Application(buildApplicationConfigureFactory())) {
-            application.initialize();
-            //
-            Scaffold.Builder builder = Scaffold.builder(application, false);
-            String namedFilterClass = application.getParam(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS);
-            if (StringUtils.isNotBlank(namedFilterClass)) {
-                builder.namedFilter((INamedFilter) buildRuntimeClassLoader(mavenProject).loadClass(namedFilterClass).newInstance());
+        return checked;
+    }
+
+    private void doWriteCfgFile(File cfgFile, CApplication cApplication) throws IOException {
+        String content = JsonWrapper.toJsonString(cApplication, true, true);
+        File parentFile = cfgFile.getParentFile();
+        if (parentFile.exists() || parentFile.mkdirs()) {
+            IOUtils.write(content, new FileOutputStream(cfgFile), StandardCharsets.UTF_8);
+            getLog().info("Output file: " + cfgFile);
+        }
+    }
+
+    private void buildCrudFromDb(File cfgFile) throws Exception {
+        cfgFile = defaultCfgFileIfNeed(cfgFile);
+        if (checkCfgFile(cfgFile)) {
+            try (IApplication application = new Application(buildApplicationConfigureFactory())) {
+                application.initialize();
+                //
+                Scaffold.Builder builder = Scaffold.builder(application, false);
+                String namedFilterClass = application.getParam(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS);
+                if (StringUtils.isNotBlank(namedFilterClass)) {
+                    builder.namedFilter((INamedFilter) buildRuntimeClassLoader(mavenProject).loadClass(namedFilterClass).newInstance());
+                }
+                Scaffold scaffold = builder.build();
+                IDatabase owner = application.getModuleManager().getModule(JDBC.class);
+                //
+                CApplication cApp = new CApplication()
+                        .setName(getProjectName())
+                        .setPackageName(getPackageName())
+                        .setAuthor("YMP (https://www.ymate.net/")
+                        .setVersion(getVersion())
+                        .setCreateTime(DateTimeHelper.now().toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
+                //
+                List<CApi> cApis = new ArrayList<>();
+                scaffold.getTables(owner, getDataSource(), false)
+                        .forEach(tableInfo -> {
+                            if (!ArrayUtils.isEmpty(filter) && !ArrayUtils.contains(filter, tableInfo.getName())) {
+                                getLog().info("Table Name: " + tableInfo.getName() + " has been filtered.");
+                                return;
+                            }
+                            cApis.add(buildApi(scaffold, tableInfo, false));
+                        });
+                cApp.setApis(cApis);
+                //
+                scaffold.getTables(owner, getDataSource(), true)
+                        .forEach(tableInfo -> {
+                            if (!ArrayUtils.isEmpty(filter) && !ArrayUtils.contains(filter, tableInfo.getName())) {
+                                getLog().info("View Name: " + tableInfo.getName() + " has been filtered.");
+                                return;
+                            }
+                            cApis.add(buildApi(scaffold, tableInfo, true));
+                        });
+                doWriteCfgFile(cfgFile, cApp);
             }
-            Scaffold scaffold = builder.build();
-            IDatabase owner = application.getModuleManager().getModule(JDBC.class);
-            //
+        }
+    }
+
+    private void buildCrudSimple(File cfgFile) throws Exception {
+        cfgFile = defaultCfgFileIfNeed(cfgFile);
+        if (checkCfgFile(cfgFile)) {
             CApplication cApp = new CApplication()
                     .setName(getProjectName())
                     .setPackageName(getPackageName())
@@ -195,31 +253,53 @@ public class CrudMojo extends AbstractPersistenceMojo {
                     .setVersion(getVersion())
                     .setCreateTime(DateTimeHelper.now().toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
             //
-            List<CApi> cApis = new ArrayList<>();
-            scaffold.getTables(owner, getDataSource(), false)
-                    .forEach(tableInfo -> {
-                        if (!ArrayUtils.isEmpty(filter) && !ArrayUtils.contains(filter, tableInfo.getName())) {
-                            getLog().info("Table Name: " + tableInfo.getName() + " has been filtered.");
-                            return;
-                        }
-                        cApis.add(buildApi(scaffold, tableInfo, false));
-                    });
-            cApp.setApis(cApis);
+            CApi cApi = new CApi();
+            CProperty cProperty = new CProperty()
+                    .setField(new CField())
+                    .setConfig(new CConfig()
+                            .setStatus(Collections.singletonList(new CStatusConf()))
+                            .setQuery(new CQueryConf().setValidation(new CValidation()
+                                    .setDateTime(new CVDateTime())
+                                    .setDataRange(new CVDataRange())
+                                    .setEmail(new CVEmail())
+                                    .setIdCard(new CVIdCard())
+                                    .setLength(new CVLength())
+                                    .setMobile(new CVMobile())
+                                    .setNumeric(new CVNumeric())
+                                    .setRegex(new CVRegex())))
+                            .setCreateOrUpdate(new CCreateOrUpdateConf()
+                                    .setValidation(new CValidation()
+                                            .setDateTime(new CVDateTime())
+                                            .setDataRange(new CVDataRange())
+                                            .setEmail(new CVEmail())
+                                            .setIdCard(new CVIdCard())
+                                            .setLength(new CVLength())
+                                            .setMobile(new CVMobile())
+                                            .setNumeric(new CVNumeric())
+                                            .setRegex(new CVRegex()))));
+            cApi.setProperties(Collections.singletonList(cProperty));
+            cApi.setQuery(new CQuery()
+                    .setFroms(Collections.singletonList(new CFrom()
+                            .setType(QFrom.Type.TABLE)))
+                    .setJoins(Collections.singletonList(new CJoin()
+                            .setFrom(new CFrom())
+                            .setOn(Collections.singletonList(new COn()
+                                    .setField(new CField())
+                                    .setWith(new CField())
+                                    .setLogicalOpt(Cond.LogicalOpt.AND)))
+                            .setType(Join.Type.LEFT)))
+                    .setOrderFields(Collections.singletonList(new COrderField()
+                            .setType(QOrderField.Type.DESC))));
+            cApi.setSettings(new CSettings()
+                    .setEnableStatus(true)
+                    .setEnableExport(true)
+                    .setEnableRemove(true)
+                    .setEnableUpdate(true)
+                    .setEnableQuery(true)
+                    .setEnableCreate(true));
+            cApp.setApis(Collections.singletonList(cApi));
             //
-            scaffold.getTables(owner, getDataSource(), true)
-                    .forEach(tableInfo -> {
-                        if (!ArrayUtils.isEmpty(filter) && !ArrayUtils.contains(filter, tableInfo.getName())) {
-                            getLog().info("View Name: " + tableInfo.getName() + " has been filtered.");
-                            return;
-                        }
-                        cApis.add(buildApi(scaffold, tableInfo, true));
-                    });
-            String content = JsonWrapper.toJsonString(cApp, true, true);
-            File parentFile = cfgFile.getParentFile();
-            if (parentFile.exists() || parentFile.mkdirs()) {
-                IOUtils.write(content, new FileOutputStream(cfgFile), StandardCharsets.UTF_8);
-                getLog().info("Output file: " + cfgFile);
-            }
+            doWriteCfgFile(cfgFile, cApp);
         }
     }
 
