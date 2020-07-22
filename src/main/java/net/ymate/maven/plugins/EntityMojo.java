@@ -101,7 +101,7 @@ public class EntityMojo extends AbstractPersistenceMojo {
                     properties.put("entityInfo", entityInfo);
                     //
                     if (beanOnly) {
-                        doWriteTargetFile(scaffold, String.format("/%s/%sBean.java", StringUtils.lowerCase(scaffold.getClassSuffix()), entityInfo.getName()), "/entity/Bean", properties);
+                        doWriteTargetFile(scaffold, String.format("/bean/%sBean.java", entityInfo.getName()), "/entity/Bean", properties);
                     } else {
                         String finalEntityName = String.format("%s%s", entityInfo.getName(), scaffold.isUseClassSuffix() ? StringUtils.capitalize(scaffold.getClassSuffix()) : StringUtils.EMPTY);
                         doWriteTargetFile(scaffold, String.format("/%s/%s.java", StringUtils.lowerCase(scaffold.getClassSuffix()), finalEntityName), view ? "/entity/View" : "/entity/Entity", properties);

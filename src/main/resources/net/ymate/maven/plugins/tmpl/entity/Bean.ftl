@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ${config.packageName}.${config.classSuffix?lower_case};
+package ${config.packageName}.bean;
 
 <#if (apidocs)>import net.ymate.apidocs.annotation.ApiProperty;</#if>
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import java.io.Serializable;
 
 /**
@@ -72,6 +73,13 @@ public class ${entityInfo.name?cap_first}Bean implements Serializable {
 
     </#if>
 </#list>
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)<#list entityInfo.primaryKeys as field>
+                .append("${field.varName}", ${field.varName})</#list><#list entityInfo.fields as field><#if field.varName != entityInfo.primaryKeyName || (entityInfo.primaryKeys?size == 0)>
+                .append("${field.varName}", ${field.varName})</#if></#list>
+                .toString();
+    }
 
 <#if (config.useChainMode)>
     public Builder bind() {

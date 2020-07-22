@@ -108,6 +108,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     public void set${field.varName?cap_first}(${field.varType} ${field.varName}) {
         this.${field.varName} = ${field.varName};
     }
+
     <#elseif field.varName != entityInfo.primaryKeyName>
     public ${field.varType} get_${field.varName?cap_first}() {
         return ${field.varName};
@@ -116,6 +117,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     public void set_${field.varName?cap_first}(${field.varType} ${field.varName}) {
         this.${field.varName} = ${field.varName};
     }
+
     </#if>
 </#list>
 
