@@ -74,23 +74,23 @@ public class ${entityInfo.name?cap_first}Bean implements Serializable {
 </#list>
 
 <#if (config.useChainMode)>
-    public ${entityInfo.name?cap_first}BeanBuilder bind() {
-        return new ${entityInfo.name?cap_first}BeanBuilder(this);
+    public Builder bind() {
+        return new Builder(this);
     }
 
-    public static ${entityInfo.name?cap_first}BeanBuilder builder() {
-        return new ${entityInfo.name?cap_first}BeanBuilder();
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public static class ${entityInfo.name?cap_first}BeanBuilder {
+    public static class Builder {
 
         private final ${entityInfo.name?cap_first}Bean targetBean;
 
-        public ${entityInfo.name?cap_first}BeanBuilder() {
+        public Builder() {
             targetBean = new ${entityInfo.name?cap_first}Bean();
         }
 
-        public ${entityInfo.name?cap_first}BeanBuilder(${entityInfo.name?cap_first}Bean targetBean) {
+        public Builder(${entityInfo.name?cap_first}Bean targetBean) {
             this.targetBean = targetBean;
         }
 
@@ -103,7 +103,7 @@ public class ${entityInfo.name?cap_first}Bean implements Serializable {
             return targetBean.get${field.varName?cap_first}();
         }
 
-        public ${entityInfo.name?cap_first}BeanBuilder ${field.varName}(${field.varType} ${field.varName}) {
+        public Builder ${field.varName}(${field.varType} ${field.varName}) {
             targetBean.set${field.varName?cap_first}(${field.varName});
             return this;
         }
@@ -115,7 +115,7 @@ public class ${entityInfo.name?cap_first}Bean implements Serializable {
             return targetBean.get${field.varName?cap_first}();
         }
 
-        public ${entityInfo.name?cap_first}BeanBuilder ${field.varName}(${field.varType} ${field.varName}) {
+        public Builder ${field.varName}(${field.varType} ${field.varName}) {
             targetBean.set${field.varName?cap_first}(${field.varName});
             return this;
         }

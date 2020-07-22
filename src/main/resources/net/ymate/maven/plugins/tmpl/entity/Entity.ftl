@@ -120,35 +120,35 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
 </#list>
 
 <#if (config.useChainMode)>
-    public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder bind() {
-        return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(this);
+    public Builder bind() {
+        return new Builder(this);
     }
 
-    public static ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder builder() {
-        return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder();
+    public static Builder builder() {
+        return new Builder();
     }
 
     <#if (!config.useBaseEntity)>
-        public static ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder builder(IDatabase dbOwner) {
-            return new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(dbOwner);
+        public static Builder builder(IDatabase dbOwner) {
+            return new Builder(dbOwner);
         }
     </#if>
 
-    public static class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder {
+    public static class Builder {
 
         private final ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> targetEntity;
 
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder() {
+        public Builder() {
             targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>();
         }
 
     <#if (!config.useBaseEntity)>
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(IDatabase dbOwner) {
+        public Builder(IDatabase dbOwner) {
             targetEntity = new ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>(dbOwner);
         }
     </#if>
 
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> targetEntity) {
+        public Builder(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> targetEntity) {
             this.targetEntity = targetEntity;
         }
 
@@ -161,7 +161,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
             return targetEntity.getConnectionHolder();
         }
 
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder connectionHolder(IDatabaseConnectionHolder connectionHolder) {
+        public Builder connectionHolder(IDatabaseConnectionHolder connectionHolder) {
             targetEntity.setConnectionHolder(connectionHolder);
             return this;
         }
@@ -170,7 +170,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
             return targetEntity.getDataSourceName();
         }
 
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder dataSourceName(String dataSourceName) {
+        public Builder dataSourceName(String dataSourceName) {
             targetEntity.setDataSourceName(dataSourceName);
             return this;
         }
@@ -179,7 +179,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
             return targetEntity.getShardingable();
         }
 
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder shardingable(IShardingable shardingable) {
+        public Builder shardingable(IShardingable shardingable) {
             targetEntity.setShardingable(shardingable);
             return this;
         }
@@ -191,7 +191,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
             return targetEntity.get${field.varName?cap_first}();
         }
 
-        public ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>Builder ${field.varName}(${field.varType} ${field.varName}) {
+        public Builder ${field.varName}(${field.varType} ${field.varName}) {
             targetEntity.set${field.varName?cap_first}(${field.varName});
             return this;
         }
