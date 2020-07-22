@@ -83,7 +83,11 @@ public class CrudMojo extends AbstractPersistenceMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             File cfgFile = new File(getBasedir(), StringUtils.defaultIfBlank(file, DEFAULT_CRUD_FILE));
-            if (cfgFile.exists() && cfgFile.isFile()) {
+            if (cfgFile.exists()) {
+                if (!cfgFile.isFile()) {
+                    getLog().warn("It's not a file " + cfgFile);
+                    return;
+                }
                 if (fromDb) {
                     buildCrudFromDb(cfgFile);
                 } else {
@@ -163,7 +167,11 @@ public class CrudMojo extends AbstractPersistenceMojo {
         if (cfgFile == null) {
             cfgFile = new File(getBasedir(), StringUtils.defaultIfBlank(file, DEFAULT_CRUD_FILE));
         }
-        if (cfgFile.exists() && cfgFile.isFile()) {
+        if (cfgFile.exists()) {
+            if (!cfgFile.isFile()) {
+                getLog().warn("It's not a file " + cfgFile);
+                return;
+            }
             if (!isOverwrite()) {
                 getLog().warn("Skip existing file " + cfgFile);
                 return;
@@ -207,8 +215,11 @@ public class CrudMojo extends AbstractPersistenceMojo {
                         cApis.add(buildApi(scaffold, tableInfo, true));
                     });
             String content = JsonWrapper.toJsonString(cApp, true, true);
-            IOUtils.write(content, new FileOutputStream(cfgFile), StandardCharsets.UTF_8);
-            getLog().info("Output file: " + cfgFile);
+            File parentFile = cfgFile.getParentFile();
+            if (parentFile.exists() || parentFile.mkdirs()) {
+                IOUtils.write(content, new FileOutputStream(cfgFile), StandardCharsets.UTF_8);
+                getLog().info("Output file: " + cfgFile);
+            }
         }
     }
 
