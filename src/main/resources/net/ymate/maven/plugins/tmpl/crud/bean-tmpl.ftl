@@ -56,7 +56,9 @@ public class ${api.name?cap_first}Bean implements Serializable {
 
     public void setEnd${p.name?cap_first}(${p.type} end${p.name?cap_first}) {
         this.end${p.name?cap_first} = end${p.name?cap_first};
-    }<#else>
+    }
+
+    <#else>
     public ${p.type} get${p.name?cap_first}() {
         return ${p.name};
     }
@@ -65,12 +67,15 @@ public class ${api.name?cap_first}Bean implements Serializable {
         this.${p.name} = ${p.name};
     }
 
-</#if></#if></#list><#if (normalFields?size > 0)>
+</#if></#if></#list>
+<#if (normalFields?size > 0)>
+
     @Override
     public String toString() {
         return new ToStringBuilder(this)<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
             .append("start${p.name?cap_first}", start${p.name?cap_first})
-            .append("end${p.name?cap_first}", end${p.name?cap_first})<#else>.append("${p.name}", ${p.name})</#if></#if></#list>
+            .append("end${p.name?cap_first}", end${p.name?cap_first})<#else>
+            .append("${p.name}", ${p.name})</#if></#if></#list>
             .toString();
     }
 

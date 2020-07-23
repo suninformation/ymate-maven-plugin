@@ -28,11 +28,11 @@
  */
 package ${app.packageName}.controller;
 
+import ${api.entityClass};
 import ${app.packageName}.bean.*;
 import ${app.packageName}.dto.*;
 import ${app.packageName}.repository.I${api.name?cap_first}Repository;<#if multiPrimaryKey>
-import ${app.packageName}.repository.impl.${api.name?cap_first}Repository;
-import org.apache.commons.lang3.ArrayUtils;</#if>
+import ${app.packageName}.repository.impl.${api.name?cap_first}Repository;</#if>
 import ${app.packageName}.vo.${api.name?cap_first}VO;<#if apidocs>
 import net.ymate.apidocs.annotation.*;</#if>
 import net.ymate.platform.commons.ExcelFileExportHelper;
@@ -48,6 +48,7 @@ import net.ymate.platform.webmvc.util.WebErrorCode;
 import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.util.Collections;
@@ -71,7 +72,7 @@ public class ${api.name?cap_first}Controller {
     @Inject
     private I${api.name?cap_first}Repository repository;
 
-    <#if !(api.settings??) || api.settings.enableQuery!true><#if apidocs>@ApiAction(value = "Query", description = "")
+    <#if !(api.settings??) || api.settings.enableQuery!true><#if apidocs>@ApiAction(value = "${languageMap.query}", description = "")
     @ApiResponses(description = "", type = ${api.name?cap_first}VO.class)
     @ApiGenerateResponseExample(paging = true)</#if>
     @RequestMapping("/query")
@@ -82,7 +83,7 @@ public class ${api.name?cap_first}Controller {
         return WebResult.succeed().data(resultSet);
     }
 
-    <#if apidocs>@ApiAction(value = "Detail", description = "")
+    <#if apidocs>@ApiAction(value = "${languageMap.detail}", description = "")
     @ApiResponses(description = "", type = ${api.name?cap_first}VO.class)
     @ApiGenerateResponseExample</#if>
     @RequestMapping("/detail")
@@ -96,7 +97,7 @@ public class ${api.name?cap_first}Controller {
         return WebResult.create(WebErrorCode.resourceNotFoundOrNotExist());
     }</#if>
 
-    <#if !(api.settings??) || api.settings.enableCreate!true><#if apidocs>@ApiAction(value = "Create", description = "")</#if>
+    <#if !(api.settings??) || api.settings.enableCreate!true><#if apidocs>@ApiAction(value = "${languageMap.create}", description = "")</#if>
     @RequestMapping(value = "/create", method = Type.HttpMethod.POST)
     @Transaction
     public Object create(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
@@ -106,7 +107,7 @@ public class ${api.name?cap_first}Controller {
         return WebResult.succeed();
     }</#if>
 
-    <#if !(api.settings??) || api.settings.enableUpdate!true><#if apidocs>@ApiAction(value = "Update", description = "")</#if>
+    <#if !(api.settings??) || api.settings.enableUpdate!true><#if apidocs>@ApiAction(value = "${languageMap.update}", description = "")</#if>
     @RequestMapping(value = "/update", method = Type.HttpMethod.POST)
     @Transaction
     public Object update(<#list primaryFields as p><@parseField p false/><#if p_has_next>,
@@ -118,9 +119,24 @@ public class ${api.name?cap_first}Controller {
                          <@parseField lastModifyTimeProp false/></#if>) throws Exception {
         repository.update${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, ${api.name?uncap_first}Update.toBean()<#if lastModifyTimeProp??>, ${lastModifyTimeProp.name}</#if>);
         return WebResult.succeed();
-    }</#if>
+    }<#list api.properties as p><#if !p.primary && p.config?? && p.config.status??><#list p.config.status as s><#if s.enabled>
 
-    <#if !(api.settings??) || api.settings.enableRemove!true><#if apidocs>@ApiAction(value = "Remove", description = "")</#if>
+    <#if apidocs>@ApiAction(value = "${s.name!""}", description = "${s.description!""}")</#if>
+    @RequestMapping(value = "${s.mapping!""}", method = Type.HttpMethod.POST)
+    @Transaction
+    public Object ${s.name?uncap_first}(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
+
+                    </#if></#list><#else><@parseField primaryKey false/></#if><#if s.reason>,
+
+                    <#if apidocs>@ApiParam
+                    </#if>@VLength(max = 100)
+                    @VField(name = "${languageMap.reason}")
+                    @RequestParam String reason</#if>) throws Exception {
+        repository.update${api.name?cap_first}s(database, ArrayUtils.toArray(<#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>), Fields.create(<@buildFieldName p.field/>), Params.create(${s.value}));
+        return WebResult.succeed();
+    }</#if></#list></#if></#list></#if>
+
+    <#if !(api.settings??) || api.settings.enableRemove!true><#if apidocs>@ApiAction(value = "${languageMap.remove}", description = "")</#if>
     @RequestMapping(value = "/remove", method = Type.HttpMethod.POST)
     @Transaction
     public Object remove(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
@@ -128,26 +144,9 @@ public class ${api.name?cap_first}Controller {
                          </#if></#list><#else><@parseField primaryKey true/></#if>) throws Exception {
         repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>);
         return WebResult.succeed();
-    }</#if><#list api.properties as p><#if !p.primary && p.config?? && p.config.status??><#list p.config.status as s><#if s.enabled>
+    }</#if>
 
-    <#if apidocs>@ApiAction(value = "${s.name!""}", description = "${s.description!""}")</#if>
-    @RequestMapping(value = "${s.mapping!""}", method = Type.HttpMethod.POST)
-    @Transaction
-    public Object ${s.name?uncap_first}(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
-
-                         </#if></#list><#else><@parseField primaryKey false/></#if><#if s.reason>,
-
-                         <#if apidocs>@ApiParam
-                         </#if>@VLength(max = 100)
-                         @VField(name = "原因说明")
-                         @RequestParam String reason</#if><#if lastModifyTimeProp??>,
-
-                         <@parseField lastModifyTimeProp false/></#if>) throws Exception {
-        repository.update${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, ${api.name?cap_first}UpdateBean.builder().${p.name}(<#if ((p.type!"")?lower_case)?contains("string")>"${s.value}"<#else>${s.value}</#if>).build()<#if lastModifyTimeProp??>, ${lastModifyTimeProp.name}</#if>);
-        return WebResult.succeed();
-    }</#if></#list></#if></#list>
-
-    <#if !(api.settings??) || api.settings.enableExport!true><#if apidocs>@ApiAction(value = "Export", description = "", notes = "注意：若省略条件参数调用导出接口将返回全部数据，存在安全隐患！")</#if>
+    <#if !(api.settings??) || api.settings.enableExport!true><#if apidocs>@ApiAction(value = "${languageMap.export}", description = "", notes = "${languageMap.notes}")</#if>
     @RequestMapping("/export")
     public Object export(<#if apidocs>@ApiParam </#if>@ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first}) throws Exception {
         ExcelFileExportHelper exportHelper = ExcelFileExportHelper.bind(index -> {

@@ -25,6 +25,7 @@ import ${app.packageName}.vo.${api.name?cap_first}VO;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
+import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.query.OrderBy;
 
@@ -48,7 +49,13 @@ public interface I${api.name?cap_first}Repository {
         return update${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, updateBean<#if lastModifyTimeProp??>, lastModifyTime</#if>);
     }
 
-    ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp??>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception;</#if>
+    ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp??>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception;
+
+    default int update${api.name?cap_first}s(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids, Fields fields, Params values) throws Exception {
+        return update${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), ids, fields, values);
+    }
+
+    int update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids, Fields fields, Params values) throws Exception;</#if>
 
     <#if !(api.settings??) || api.settings.enableQuery!true>default ${entityName} find${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields fields) throws Exception {
         return find${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, fields);

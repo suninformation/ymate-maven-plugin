@@ -33,6 +33,7 @@ import net.ymate.platform.persistence.jdbc.query.annotation.QOrderField;
 import net.ymate.platform.persistence.jdbc.scaffold.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -104,6 +105,40 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             Map<String, Object> props = new HashMap<>();
                             props.put("app", cApp);
                             props.put("apidocs", apidocs);
+                            //
+                            Map<String, String> languageMap = new HashMap<>();
+                            Locale locale = LocaleUtils.toLocale(language);
+                            if (locale == null) {
+                                locale = Locale.getDefault();
+                            }
+                            if (Locale.CHINA.equals(locale)) {
+                                languageMap.put("query", "查询");
+                                languageMap.put("detail", "详情");
+                                languageMap.put("create", "新增");
+                                languageMap.put("update", "更新");
+                                languageMap.put("reason", "原因说明");
+                                languageMap.put("remove", "删除");
+                                languageMap.put("export", "导出");
+                                languageMap.put("notes", "注意：若省略条件参数调用导出接口将返回全部数据，存在安全隐患！");
+                                languageMap.put("page", "页号");
+                                languageMap.put("page_description", "取值范围：>=1");
+                                languageMap.put("pageSize", "每页记录数");
+                                languageMap.put("pageSize_description", "取值范围：>=20 且 <=200");
+                            } else {
+                                languageMap.put("query", "Query");
+                                languageMap.put("detail", "Detail");
+                                languageMap.put("create", "Create");
+                                languageMap.put("update", "Update");
+                                languageMap.put("reason", "Reason");
+                                languageMap.put("remove", "Remove");
+                                languageMap.put("export", "Export");
+                                languageMap.put("notes", "Warning: calling export interface will return all data if omitting condition parameter, which is very dangerous!");
+                                languageMap.put("page", "Page number");
+                                languageMap.put("page_description", "Value range: >= 1");
+                                languageMap.put("pageSize", "Records per page");
+                                languageMap.put("pageSize_description", "Value range: >=20 and <=200");
+                            }
+                            props.put("languageMap", languageMap);
                             //
                             boolean hasQuery = false;
                             //
@@ -376,8 +411,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setDataRange(new CVDataRange())
                                     .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))));
             if (!view && isStatus) {
-                cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName("Enable").setMapping("/enable").setValue("1"),
-                        new CStatusConf().setEnabled(true).setName("Disable").setMapping("/disable").setValue("0")));
+                cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName("Enable").setMapping("/enable").setValue("0"),
+                        new CStatusConf().setEnabled(true).setName("Disable").setMapping("/disable").setValue("1")));
             }
             cProperty.setConfig(cConfig);
             //

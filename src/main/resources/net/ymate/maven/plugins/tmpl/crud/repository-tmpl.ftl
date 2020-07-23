@@ -29,6 +29,7 @@ import net.ymate.platform.core.configuration.IConfiguration;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
+import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.annotation.Transaction;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
@@ -41,6 +42,8 @@ import net.ymate.platform.persistence.jdbc.support.EntityStateWrapper;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
 
 /**
  * <#if api.description?? && (api.description?length > 0)>${api.description}<br></#if>
@@ -62,7 +65,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         return null</#if>;
     }</#if>
 
-    @Override
+    <#if !(api.settings??) || api.settings.enableCreate!true>@Override
     @Transaction
     public ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception {<#if createTimeProp??>
         Long now = System.currentTimeMillis();</#if>
@@ -91,6 +94,28 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     }
 
     @Override
+    @Transaction
+    public int update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids, Fields fields, Params values) throws Exception {
+        if (ArrayUtils.isEmpty(ids)) {
+            throw new NullArgumentException("ids");
+        }
+        if (fields == null || fields.isEmpty()) {
+            throw new NullArgumentException("fields");
+        }
+        if (values == null || values.isEmpty()) {
+            throw new NullArgumentException("values");
+        }
+        return owner.openSession(session -> {
+            BatchSQL batchSQL = BatchSQL.create(Update.create(owner, dataSourceName, ${entityName}.class)
+                    .field(fields)
+                    .where(Cond.create(owner, dataSourceName)<#if multiPrimaryKey><#list primaryFields as p>
+                            <#if (p_index > 0)>.and()</#if>.eq(<@buildFieldName p.field/>)</#list><#else>.eq(<@buildFieldName primaryKey.field/>)</#if>));
+            Arrays.stream(ids).map(id -> Params.create(values, <#if multiPrimaryKey><#list primaryFields as p>id.get${p.name?cap_first}()<#if p_has_next>, </#if></#list><#else>id</#if>)).forEachOrdered(batchSQL::addParameter);
+            return BatchUpdateOperator.parseEffectCounts(session.executeForUpdate(batchSQL));
+        });
+    }</#if>
+
+    <#if !(api.settings??) || api.settings.enableQuery!true>@Override
     public ${entityName} find${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields fields) throws Exception {
         return ${entityName}.builder(owner).dataSourceName(dataSourceName).id(id).build().load(fields);
     }
@@ -129,9 +154,9 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                 .where(Where.create(cond), true)
                 .addExcludeField(excludedFields)
                 .find(page);
-    }
+    }</#if>
 
-    @Override
+    <#if !(api.settings??) || api.settings.enableRemove!true>@Override
     @Transaction
     public int remove${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id) throws Exception {
         if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")>id == null<#else>StringUtils.isBlank(id)</#if>) {
@@ -147,7 +172,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             throw new NullArgumentException("ids");
         }
         return owner.openSession(session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, ids)));
-    }
+    }</#if>
 
     @Override
     public IConfiguration getConfig() {
