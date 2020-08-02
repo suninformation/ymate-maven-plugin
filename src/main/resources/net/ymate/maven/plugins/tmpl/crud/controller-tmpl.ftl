@@ -150,7 +150,7 @@ public class ${api.name?cap_first}Controller {
     @RequestMapping("/export")
     public Object export(<#if apidocs>@ApiParam </#if>@ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first}) throws Exception {
         ExcelFileExportHelper exportHelper = ExcelFileExportHelper.bind(index -> {
-            IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if hideInListFields?? && (hideInListFields?size > 0)>Fields.create(<#list hideInListFields as field><@buildFieldName field/><#if field_has_next>, </#if></#list>)<#else>null</#if>, Page.create(index).pageSize(10000).count(false));
+            IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if notExportFields?? && (notExportFields?size > 0)>Fields.create(<#list notExportFields as field><@buildFieldName field/><#if field_has_next>, </#if></#list>)<#else>null</#if>, Page.create(index).pageSize(10000).count(false));
             if (resultSet != null && resultSet.isResultsAvailable()) {
                 return Collections.singletonMap("data", resultSet.getResultData());
             }

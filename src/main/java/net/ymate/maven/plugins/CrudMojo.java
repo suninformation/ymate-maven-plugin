@@ -166,6 +166,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     }
                                 });
                                 properties.put("hideInListFields", cApi.getProperties().stream().filter(CProperty::isHideInList).map(CProperty::getField).collect(Collectors.toList()));
+                                properties.put("notExportFields", cApi.getProperties().stream().filter(cProperty -> !cProperty.isExport()).map(CProperty::getField).collect(Collectors.toList()));
                                 List<CProperty> primaryFields = cApi.getProperties().stream().filter(CProperty::isPrimary).collect(Collectors.toList());
                                 boolean multiPrimaryKey = primaryFields.size() > 1;
                                 properties.put("primaryFields", primaryFields);
