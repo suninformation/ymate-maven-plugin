@@ -76,9 +76,9 @@ public class ${api.name?cap_first}Controller {
     @ApiResponses(description = "", type = ${api.name?cap_first}VO.class)
     @ApiGenerateResponseExample(paging = true)</#if>
     @RequestMapping("/query")
-    public Object query(<#if apidocs>@ApiParam </#if>@ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first},
+    public Object query(<#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first},
 
-                        <#if apidocs>@ApiParam </#if>@ModelBind PageDTO page) throws Exception {
+                        <#if apidocs>@ApiParam </#if>@VModel @ModelBind PageDTO page) throws Exception {
         IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if hideInListFields?? && (hideInListFields?size > 0)>Fields.create(<#list hideInListFields as field><@buildFieldName field/><#if field_has_next>, </#if></#list>)<#else>null</#if>, page.toPage());
         return WebResult.succeed().data(resultSet);
     }
@@ -102,7 +102,7 @@ public class ${api.name?cap_first}Controller {
     @Transaction
     public Object create(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
 
-                         </#if></#list>, </#if><#if apidocs>@ApiParam </#if>@ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update) throws Exception {
+                         </#if></#list>, </#if><#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update) throws Exception {
         repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>), </#if>${api.name?uncap_first}Update.toBean());
         return WebResult.succeed();
     }</#if>
@@ -114,7 +114,7 @@ public class ${api.name?cap_first}Controller {
 
                          </#if></#list>,
 
-                         <#if apidocs>@ApiParam </#if>@ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update<#if lastModifyTimeProp??>,
+                         <#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update<#if lastModifyTimeProp??>,
 
                          <@parseField lastModifyTimeProp false/></#if>) throws Exception {
         repository.update${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, ${api.name?uncap_first}Update.toBean()<#if lastModifyTimeProp??>, ${lastModifyTimeProp.name}</#if>);
@@ -148,7 +148,7 @@ public class ${api.name?cap_first}Controller {
 
     <#if !(api.settings??) || api.settings.enableExport!true><#if apidocs>@ApiAction(value = "${languageMap.export}", description = "", notes = "${languageMap.notes}")</#if>
     @RequestMapping("/export")
-    public Object export(<#if apidocs>@ApiParam </#if>@ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first}) throws Exception {
+    public Object export(<#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first}) throws Exception {
         ExcelFileExportHelper exportHelper = ExcelFileExportHelper.bind(index -> {
             IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if notExportFields?? && (notExportFields?size > 0)>Fields.create(<#list notExportFields as field><@buildFieldName field/><#if field_has_next>, </#if></#list>)<#else>null</#if>, Page.create(index).pageSize(10000).count(false));
             if (resultSet != null && resultSet.isResultsAvailable()) {
