@@ -80,9 +80,47 @@ public class CrudMojo extends AbstractPersistenceMojo {
     @Parameter(property = "language")
     private String language;
 
+    private final Map<String, String> languageMap = new HashMap<>();
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
+            Locale locale = LocaleUtils.toLocale(language);
+            if (locale == null) {
+                locale = Locale.getDefault();
+            }
+            if (Locale.CHINA.equals(locale)) {
+                languageMap.put("query", "查询");
+                languageMap.put("detail", "详情");
+                languageMap.put("create", "新增");
+                languageMap.put("update", "更新");
+                languageMap.put("reason", "原因说明");
+                languageMap.put("remove", "删除");
+                languageMap.put("export", "导出");
+                languageMap.put("enable", "启用");
+                languageMap.put("disable", "禁用");
+                languageMap.put("notes", "注意：若省略条件参数调用导出接口将返回全部数据，存在安全隐患！");
+                languageMap.put("page", "页号");
+                languageMap.put("page_description", "取值范围：>=1");
+                languageMap.put("pageSize", "每页记录数");
+                languageMap.put("pageSize_description", "取值范围：>=20 且 <=200");
+            } else {
+                languageMap.put("query", "Query");
+                languageMap.put("detail", "Detail");
+                languageMap.put("create", "Create");
+                languageMap.put("update", "Update");
+                languageMap.put("reason", "Reason");
+                languageMap.put("remove", "Remove");
+                languageMap.put("export", "Export");
+                languageMap.put("enable", "Enable");
+                languageMap.put("disable", "Disable");
+                languageMap.put("notes", "Warning: calling export interface will return all data if omitting condition parameter, which is very dangerous!");
+                languageMap.put("page", "Page number");
+                languageMap.put("page_description", "Value range: >= 1");
+                languageMap.put("pageSize", "Records per page");
+                languageMap.put("pageSize_description", "Value range: >=20 and <=200");
+            }
+            //
             File cfgFile = defaultCfgFileIfNeed(null);
             if (cfgFile.exists()) {
                 if (!cfgFile.isFile()) {
@@ -106,38 +144,6 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             props.put("app", cApp);
                             props.put("apidocs", apidocs);
                             //
-                            Map<String, String> languageMap = new HashMap<>();
-                            Locale locale = LocaleUtils.toLocale(language);
-                            if (locale == null) {
-                                locale = Locale.getDefault();
-                            }
-                            if (Locale.CHINA.equals(locale)) {
-                                languageMap.put("query", "查询");
-                                languageMap.put("detail", "详情");
-                                languageMap.put("create", "新增");
-                                languageMap.put("update", "更新");
-                                languageMap.put("reason", "原因说明");
-                                languageMap.put("remove", "删除");
-                                languageMap.put("export", "导出");
-                                languageMap.put("notes", "注意：若省略条件参数调用导出接口将返回全部数据，存在安全隐患！");
-                                languageMap.put("page", "页号");
-                                languageMap.put("page_description", "取值范围：>=1");
-                                languageMap.put("pageSize", "每页记录数");
-                                languageMap.put("pageSize_description", "取值范围：>=20 且 <=200");
-                            } else {
-                                languageMap.put("query", "Query");
-                                languageMap.put("detail", "Detail");
-                                languageMap.put("create", "Create");
-                                languageMap.put("update", "Update");
-                                languageMap.put("reason", "Reason");
-                                languageMap.put("remove", "Remove");
-                                languageMap.put("export", "Export");
-                                languageMap.put("notes", "Warning: calling export interface will return all data if omitting condition parameter, which is very dangerous!");
-                                languageMap.put("page", "Page number");
-                                languageMap.put("page_description", "Value range: >= 1");
-                                languageMap.put("pageSize", "Records per page");
-                                languageMap.put("pageSize_description", "Value range: >=20 and <=200");
-                            }
                             props.put("languageMap", languageMap);
                             //
                             boolean hasQuery = false;
@@ -321,6 +327,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             .setOn(Collections.singletonList(new COn()
                                     .setField(new CField())
                                     .setWith(new CField())
+                                    .setOpt("EQ")
                                     .setLogicalOpt(Cond.LogicalOpt.AND)))
                             .setType(Join.Type.LEFT)))
                     .setOrderFields(Collections.singletonList(new COrderField()
@@ -411,8 +418,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setDataRange(new CVDataRange())
                                     .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))));
             if (!view && isStatus) {
-                cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName("Enable").setMapping("/enable").setValue("0"),
-                        new CStatusConf().setEnabled(true).setName("Disable").setMapping("/disable").setValue("1")));
+                cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName(languageMap.get("enable")).setMethodName("enable").setDescription(languageMap.get("enable")).setMapping("/enable").setValue("0"),
+                        new CStatusConf().setEnabled(true).setName(languageMap.get("disable")).setMethodName("Disable").setDescription(languageMap.get("disable")).setMapping("/disable").setValue("1")));
             }
             cProperty.setConfig(cConfig);
             //
@@ -933,6 +940,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         private String name;
 
+        private String methodName;
+
         private String mapping;
 
         private String value;
@@ -956,6 +965,15 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         public CStatusConf setName(String name) {
             this.name = name;
+            return this;
+        }
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+        public CStatusConf setMethodName(String methodName) {
+            this.methodName = methodName;
             return this;
         }
 

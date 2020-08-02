@@ -124,7 +124,7 @@ public class ${api.name?cap_first}Controller {
     <#if apidocs>@ApiAction(value = "${s.name!""}", description = "${s.description!""}")</#if>
     @RequestMapping(value = "${s.mapping!""}", method = Type.HttpMethod.POST)
     @Transaction
-    public Object ${s.name?uncap_first}(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
+    public Object ${s.methodName?uncap_first}(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
 
                     </#if></#list><#else><@parseField primaryKey false/></#if><#if s.reason>,
 

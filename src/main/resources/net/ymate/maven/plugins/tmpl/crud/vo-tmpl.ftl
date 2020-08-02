@@ -23,7 +23,7 @@ import net.ymate.platform.persistence.jdbc.query.Join;
 import net.ymate.platform.persistence.jdbc.query.annotation.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-<#if api.entityClass??>import ${api.entityClass};</#if>
+<#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 
 import java.io.Serializable;
 

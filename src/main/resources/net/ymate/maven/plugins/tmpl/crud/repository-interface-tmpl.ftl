@@ -17,7 +17,7 @@
  */
 package ${app.packageName}.repository;
 
-import ${api.entityClass};
+<#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 import ${app.packageName}.bean.${api.name?cap_first}Bean;
 import ${app.packageName}.bean.${api.name?cap_first}UpdateBean;<#if multiPrimaryKey>
 import ${entityPackageName}.${api.name?cap_first}PK;</#if>
@@ -57,19 +57,7 @@ public interface I${api.name?cap_first}Repository {
 
     int update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids, Fields fields, Params values) throws Exception;</#if>
 
-    <#if !(api.settings??) || api.settings.enableQuery!true>default ${entityName} find${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields fields) throws Exception {
-        return find${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, fields);
-    }
-
-    ${entityName} find${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields fields) throws Exception;
-
-    default IResultSet<${entityName}> find${api.name?cap_first}s(IDatabase owner, ${api.name?cap_first}Bean queryBean, Fields fields, OrderBy orderBy, Page page) throws Exception {
-        return find${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), queryBean, fields, orderBy, page);
-    }
-
-    IResultSet<${entityName}> find${api.name?cap_first}s(IDatabase owner, String dataSourceName, ${api.name?cap_first}Bean queryBean, Fields fields, OrderBy orderBy, Page page) throws Exception;
-
-    default ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
+    <#if !(api.settings??) || api.settings.enableQuery!true>default ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
         return query${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, excludedFields);
     }
 

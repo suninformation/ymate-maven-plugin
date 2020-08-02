@@ -18,7 +18,7 @@
  */
 package ${app.packageName}.repository.impl;
 
-import ${api.entityClass};
+<#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 import ${app.packageName}.bean.${api.name?cap_first}Bean;
 import ${app.packageName}.bean.${api.name?cap_first}UpdateBean;<#if multiPrimaryKey>
 import ${entityPackageName}.${api.name?cap_first}PK;<#else>import net.ymate.platform.commons.util.UUIDUtils;</#if>
@@ -116,26 +116,6 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     }</#if>
 
     <#if !(api.settings??) || api.settings.enableQuery!true>@Override
-    public ${entityName} find${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields fields) throws Exception {
-        return ${entityName}.builder(owner).dataSourceName(dataSourceName).id(id).build().load(fields);
-    }
-
-    @Override
-    public IResultSet<${entityName}> find${api.name?cap_first}s(IDatabase owner, String dataSourceName, ${api.name?cap_first}Bean queryBean, Fields fields, OrderBy orderBy, Page page) throws Exception {
-        ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else>
-                .${p.name}(queryBean.get${p.name?cap_first}())</#if></#if></#list>.build();
-        Cond cond = Cond.create(owner, dataSourceName).eqOne()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-                .range(<@buildFieldName p.field/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND)</#if></#if></#list>
-                .cond(Cond.LogicalOpt.AND, BaseEntity.buildCond(owner, entity))<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else>
-                .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.andIfNeed().like(<@buildFieldName p.field/>).param(Like.create(queryBean.get${p.name?cap_first}()).full()))</#if></#if></#list>;
-        Where where = Where.create(cond);
-        if (orderBy != null) {
-            where.orderBy().orderBy(orderBy);
-        }
-        return entity.find(where, fields, page);
-    }
-
-    @Override
     public ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
         Cond cond = Cond.create(owner, dataSourceName)<#if multiPrimaryKey><#list primaryFields as p>
                 .eq(<@buildFieldName p.field/>).param(id.get${p.name?cap_first}())</#list><#else>.eq(<@buildFieldName primaryKey.field/>).param(id)</#if>;
