@@ -48,8 +48,8 @@ public class ${api.name?cap_first}VO implements Serializable {
      * ${p.description}
      */</#if><#if apidocs>
     @ApiProperty(description = "${p.description!""}", demoValue = "${p.demoValue!""}")</#if><#if p.field??>
-    @QField(prefix = "${p.field.prefix!""}", value = <#if (p.field.value!"")?contains(".")>${p.field.value!""}<#else>"${p.field.value!""}"</#if>)</#if><#if p.export>
-    @ExportColumn(value = "${p.description!""}"<#if p.column??><#if p.column == "create_time" || p.column == "last_modify_time">, dateTime = true</#if><#if p.column == "status">, dataRange = {"禁用", "启用"}</#if></#if>)</#if>
+    @QField(prefix = "${p.field.prefix!""}", value = <#if (p.field.value!"")?contains(".")>${p.field.value!""}<#else>"${p.field.value!""}"</#if><#if (p.field.alias?? && p.field.alias?length > 0)>, alias = <#if (p.field.alias!"")?contains(".")>${p.field.alias!""}<#else>"${p.field.alias!""}"</#if></#if>)</#if><#if p.export>
+    @ExportColumn(value = "${p.description!""}"<#if p.column??><#if p.column == "create_time" || p.column == "last_modify_time">, dateTime = true</#if><#if p.column == "status">, dataRange = {"启用", "禁用"}</#if></#if>)<#else>@ExportColumn(excluded = true)</#if>
     private ${p.type} ${p.name};
 
 </#list></#if><#if (api.properties?? && api.properties?size > 0)><#list api.properties as p>
