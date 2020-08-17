@@ -73,7 +73,7 @@ public class ${api.name?cap_first}Controller {
     private I${api.name?cap_first}Repository repository;
 
     <#if !(api.settings??) || api.settings.enableQuery!true><#if apidocs>@ApiAction(value = "${languageMap.query}", description = "")
-    @ApiResponses(description = "", type = ${api.name?cap_first}VO.class)
+    @ApiResponses(description = "", type = ${api.name?cap_first}VO[].class)
     @ApiGenerateResponseExample(paging = true)</#if>
     @RequestMapping("/query")
     public Object query(<#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first},
