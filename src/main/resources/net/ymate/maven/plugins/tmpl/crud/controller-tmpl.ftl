@@ -80,7 +80,7 @@ public class ${api.name?cap_first}Controller {
 
                         <#if apidocs>@ApiParam </#if>@VModel @ModelBind PageDTO page) throws Exception {
         IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if hideInListFields?? && (hideInListFields?size > 0)>Fields.create(<#list hideInListFields as field><@buildFieldName field/><#if field_has_next>, </#if></#list>)<#else>null</#if>, page.toPage());
-        return WebResult.succeed().data(resultSet);
+        return WebResult.builder().succeed().data(resultSet);
     }
 
     <#if apidocs>@ApiAction(value = "${languageMap.detail}", description = "")
@@ -94,7 +94,7 @@ public class ${api.name?cap_first}Controller {
         if (${api.name?uncap_first} != null) {
             return WebResult.succeed().data(${api.name?uncap_first});
         }
-        return WebResult.create(WebErrorCode.resourceNotFoundOrNotExist());
+        return WebResult.builder(WebErrorCode.resourceNotFoundOrNotExist());
     }</#if>
 
     <#if !(api.settings??) || api.settings.enableCreate!true><#if apidocs>@ApiAction(value = "${languageMap.create}", description = "")</#if>
@@ -104,7 +104,7 @@ public class ${api.name?cap_first}Controller {
 
                          </#if></#list>, </#if><#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update) throws Exception {
         ${entityName} ${api.name?uncap_first} = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>), </#if>${api.name?uncap_first}Update.toBean());
-        return WebResult.succeed().data(${api.name?uncap_first}.getId());
+        return WebResult.builder().succeed().data(${api.name?uncap_first}.getId());
     }</#if>
 
     <#if !(api.settings??) || api.settings.enableUpdate!true><#if apidocs>@ApiAction(value = "${languageMap.update}", description = "")</#if>
@@ -118,9 +118,9 @@ public class ${api.name?cap_first}Controller {
 
                          <@parseField lastModifyTimeProp false/></#if>) throws Exception {
         if (repository.update${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, ${api.name?uncap_first}Update.toBean()<#if lastModifyTimeProp??>, ${lastModifyTimeProp.name}</#if>) != null) {
-            return WebResult.succeed();
+            return WebResult.builder().succeed();
         }
-        return WebResult.create(WebErrorCode.resourceNotFoundOrNotExist());
+        return WebResult.builder(WebErrorCode.resourceNotFoundOrNotExist());
     }<#list api.properties as p><#if !p.primary && p.config?? && p.config.status??><#list p.config.status as s><#if s.enabled>
 
     <#if apidocs>@ApiAction(value = "${s.name!""}", description = "${s.description!""}")</#if>
@@ -135,7 +135,7 @@ public class ${api.name?cap_first}Controller {
                     @VField(name = "${languageMap.reason}")
                     @RequestParam String reason</#if>) throws Exception {
         int effectCounts = repository.update${api.name?cap_first}s(database, ArrayUtils.toArray(<#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>), Fields.create(<@buildFieldName p.field/>), Params.create(${s.value}));
-        return WebResult.succeed().dataAttr("effectCounts", effectCounts);
+        return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
     }</#if></#list></#if></#list></#if>
 
     <#if !(api.settings??) || api.settings.enableRemove!true><#if apidocs>@ApiAction(value = "${languageMap.remove}", description = "")</#if>
@@ -145,7 +145,7 @@ public class ${api.name?cap_first}Controller {
 
                          </#if></#list><#else><@parseField primaryKey true/></#if>) throws Exception {
         int effectCounts = repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>);
-        return WebResult.succeed().dataAttr("effectCounts", effectCounts);
+        return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
     }</#if>
 
     <#if !(api.settings??) || api.settings.enableExport!true><#if apidocs>@ApiAction(value = "${languageMap.export}", description = "", notes = "${languageMap.notes}")</#if>
