@@ -19,9 +19,9 @@
 package ${app.packageName}.repository.impl;
 
 <#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
-import ${app.packageName}.bean.${api.name?cap_first}Bean;
+import ${app.packageName}.bean.${api.name?cap_first}Bean;<#if !api.view>
 import ${app.packageName}.bean.${api.name?cap_first}UpdateBean;<#if multiPrimaryKey>
-import ${entityPackageName}.${api.name?cap_first}PK;<#else>import net.ymate.platform.commons.util.UUIDUtils;</#if>
+import ${entityPackageName}.${api.name?cap_first}PK;<#else>import net.ymate.platform.commons.util.UUIDUtils;</#if></#if>
 import ${app.packageName}.repository.I${api.name?cap_first}Repository;
 import ${app.packageName}.vo.${api.name?cap_first}VO;
 import net.ymate.platform.commons.exception.DataVersionMismatchException;
@@ -56,7 +56,7 @@ import java.util.Arrays;
 @Repository
 public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Repository, IRepository {
 
-    <#if multiPrimaryKey>public static ${api.name?cap_first}PK buildPrimaryKey(<#list nonAutoPrimaryFields as p>${p.type} ${p.name}<#if p_has_next>, </#if></#list>) {
+    <#if !api.view><#if multiPrimaryKey>public static ${api.name?cap_first}PK buildPrimaryKey(<#list nonAutoPrimaryFields as p>${p.type} ${p.name}<#if p_has_next>, </#if></#list>) {
         ${api.name?cap_first}PK.Builder builder = ${api.name?cap_first}PK.builder()<#list nonAutoPrimaryFields as p>
                 .${p.name}(${p.name})</#list>;
         return builder.build();
@@ -106,23 +106,23 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             throw new NullArgumentException("values");
         }
         return owner.openSession(session -> {
-            BatchSQL batchSQL = BatchSQL.create(Update.create(owner, dataSourceName, ${entityName}.class)
+            BatchSQL batchSql = BatchSQL.create(Update.create(owner, dataSourceName, ${entityName}.class)
                     .field(fields)
                     .where(Cond.create(owner, dataSourceName)<#if multiPrimaryKey><#list primaryFields as p>
                             <#if (p_index > 0)>.and()</#if>.eq(<@buildFieldName p.field/>)</#list><#else>.eq(<@buildFieldName primaryKey.field/>)</#if>));
-            Arrays.stream(ids).map(id -> Params.create(values, <#if multiPrimaryKey><#list primaryFields as p>id.get${p.name?cap_first}()<#if p_has_next>, </#if></#list><#else>id</#if>)).forEachOrdered(batchSQL::addParameter);
-            return BatchUpdateOperator.parseEffectCounts(session.executeForUpdate(batchSQL));
+            Arrays.stream(ids).map(id -> Params.create(values, <#if multiPrimaryKey><#list primaryFields as p>id.get${p.name?cap_first}()<#if p_has_next>, </#if></#list><#else>id</#if>)).forEachOrdered(batchSql::addParameter);
+            return BatchUpdateOperator.parseEffectCounts(session.executeForUpdate(batchSql));
         });
-    }</#if>
+    }</#if></#if>
 
-    <#if !(api.settings??) || api.settings.enableQuery!true>@Override
+    <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>@Override
     public ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
-        Cond cond = Cond.create(owner, dataSourceName)<#if multiPrimaryKey><#list primaryFields as p>
-                .eq(<@buildFieldName p.field/>).param(id.get${p.name?cap_first}())</#list><#else>.eq(<@buildFieldName primaryKey.field/>).param(id)</#if>;
+        Cond cond = Cond.create(owner, dataSourceName)<#if (primaryFields?size > 0)><#if multiPrimaryKey><#list primaryFields as p>
+                .eq(<@buildFieldName p.field/>).param(id.get${p.name?cap_first}())</#list><#else>.eq(<@buildFieldName primaryKey.field/>).param(id)</#if></#if>;
         return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class).where(Where.create(cond), true)
                 .addExcludeField(excludedFields)
                 .findFirst();
-    }
+    }</#if>
 
     @Override
     public IResultSet<${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, String dataSourceName, ${api.name?cap_first}Bean queryBean, Fields excludedFields, Page page) throws Exception {
@@ -136,7 +136,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                 .find(page);
     }</#if>
 
-    <#if !(api.settings??) || api.settings.enableRemove!true>@Override
+    <#if !api.view><#if !(api.settings??) || api.settings.enableRemove!true>@Override
     @Transaction
     public int remove${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id) throws Exception {
         if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")>id == null<#else>StringUtils.isBlank(id)</#if>) {
@@ -152,7 +152,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             throw new NullArgumentException("ids");
         }
         return owner.openSession(session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, ids)));
-    }</#if>
+    }</#if></#if>
 
     @Override
     public IConfiguration getConfig() {

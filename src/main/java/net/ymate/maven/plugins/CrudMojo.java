@@ -350,6 +350,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
         EntityInfo entityInfo = scaffold.buildEntityInfo(tableInfo);
         //
         CApi cApi = new CApi();
+        cApi.setView(view);
         String entityName = String.format("%s%s", entityInfo.getName(), scaffold.isUseClassSuffix() ? StringUtils.capitalize(scaffold.getClassSuffix()) : StringUtils.EMPTY);
         cApi.setEntityClass(String.format("%s.%s.%s", scaffold.getPackageName(), StringUtils.lowerCase(scaffold.getClassSuffix()), entityName));
         cApi.setName(entityInfo.getName());
@@ -529,6 +530,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         private boolean locked;
 
+        private boolean view;
+
         public String getMapping() {
             return mapping;
         }
@@ -598,6 +601,15 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         public CApi setLocked(boolean locked) {
             this.locked = locked;
+            return this;
+        }
+
+        public boolean isView() {
+            return view;
+        }
+
+        public CApi setView(boolean view) {
+            this.view = view;
             return this;
         }
     }

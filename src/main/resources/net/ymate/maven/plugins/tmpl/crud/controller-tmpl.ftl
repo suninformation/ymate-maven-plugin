@@ -83,7 +83,7 @@ public class ${api.name?cap_first}Controller {
         return WebResult.builder().succeed().data(resultSet);
     }
 
-    <#if apidocs>@ApiAction(value = "${languageMap.detail}", description = "")
+    <#if !api.view><#if apidocs>@ApiAction(value = "${languageMap.detail}", description = "")
     @ApiResponses(description = "", type = ${api.name?cap_first}VO.class)
     @ApiGenerateResponseExample</#if>
     @RequestMapping("/detail")
@@ -146,7 +146,7 @@ public class ${api.name?cap_first}Controller {
                          </#if></#list><#else><@parseField primaryKey true/></#if>) throws Exception {
         int effectCounts = repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>);
         return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
-    }</#if>
+    }</#if></#if>
 
     <#if !(api.settings??) || api.settings.enableExport!true><#if apidocs>@ApiAction(value = "${languageMap.export}", description = "", notes = "${languageMap.notes}")</#if>
     @RequestMapping("/export")
