@@ -20,9 +20,14 @@ import net.ymate.platform.core.persistence.annotation.Entity;
 import net.ymate.platform.core.persistence.annotation.Id;
 import net.ymate.platform.core.persistence.annotation.Property;
 import net.ymate.platform.core.persistence.annotation.Readonly;<#if (!config.useBaseEntity)>
+import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.AbstractFieldConditionBuilder;
+import net.ymate.platform.persistence.jdbc.query.FieldCondition;
+import net.ymate.platform.persistence.jdbc.query.Query;
 import net.ymate.platform.persistence.jdbc.support.BaseEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;</#if>
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import org.apache.commons.lang3.StringUtils;</#if>
 <#if (entityInfo.primaryKeyType == "Serializable")>
 import java.io.Serializable;</#if>
 
@@ -164,4 +169,73 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
     }
 
     public static final String TABLE_NAME = "${entityInfo.tableName}";
+
+    <#if (!config.useBaseEntity)>public static FieldConditionBuilder conditionBuilder() {
+        return new FieldConditionBuilder();
+    }
+
+    public static FieldConditionBuilder conditionBuilder(String prefix) {
+        return new FieldConditionBuilder(prefix);
+    }
+
+    public static FieldConditionBuilder conditionBuilder(Query<?> query) {
+        return conditionBuilder(query, null);
+    }
+
+    public static FieldConditionBuilder conditionBuilder(Query<?> query, String prefix) {
+        return new FieldConditionBuilder(query.owner(), query.dataSourceName(), prefix);
+    }
+
+    public static FieldConditionBuilder conditionBuilder(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> entity) {
+        return conditionBuilder(entity, null);
+    }
+
+    public static FieldConditionBuilder conditionBuilder(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> entity, String prefix) {
+        return new FieldConditionBuilder(entity.doGetSafeOwner(), entity.getDataSourceName(), prefix);
+    }
+
+    public static FieldConditionBuilder conditionBuilder(IDatabase owner, String prefix) {
+        return new FieldConditionBuilder(owner, prefix);
+    }
+
+    public static FieldConditionBuilder conditionBuilder(IDatabase owner, String dataSourceName, String prefix) {
+        return new FieldConditionBuilder(owner, dataSourceName, prefix);
+    }
+
+    public static class FieldConditionBuilder extends AbstractFieldConditionBuilder {
+
+        public FieldConditionBuilder() {
+            super(null, null, null);
+        }
+
+        public FieldConditionBuilder(String prefix) {
+            super(null, null, prefix);
+        }
+
+        public FieldConditionBuilder(Query<?> query) {
+            super(query.owner(), null, null);
+        }
+
+        public FieldConditionBuilder(Query<?> query, String prefix) {
+            super(query.owner(), query.dataSourceName(), prefix);
+        }
+
+        public FieldConditionBuilder(IDatabase owner) {
+            super(owner, null, null);
+        }
+
+        public FieldConditionBuilder(IDatabase owner, String prefix) {
+            super(owner, null, prefix);
+        }
+
+        public FieldConditionBuilder(IDatabase owner, String dataSourceName, String prefix) {
+            super(owner, dataSourceName, prefix);
+        }
+        <#list entityInfo.fields as field>
+
+        public FieldCondition ${field.varName}() {
+            return createFieldCondition(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.columnName?upper_case});
+        }
+        </#list>
+    }</#if>
 }

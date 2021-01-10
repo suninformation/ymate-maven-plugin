@@ -30,7 +30,9 @@ import net.ymate.platform.persistence.jdbc.scaffold.TableInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
@@ -111,7 +113,7 @@ public class EntityMojo extends AbstractPersistenceMojo {
                     }
                 } else {
                     ConsoleTableBuilder consoleTableBuilder = ConsoleTableBuilder.create(10).escape();
-                    System.out.println(String.format("%s_NAME: %s", view ? "VIEW" : "TABLE", tableInfo.getName()));
+                    System.out.printf("%s_NAME: %s%n", view ? "VIEW" : "TABLE", tableInfo.getName());
                     if (ConsoleTableBuilder.TYPE_MARKDOWN.equals(getFormat())) {
                         System.out.println();
                         consoleTableBuilder.markdown();
