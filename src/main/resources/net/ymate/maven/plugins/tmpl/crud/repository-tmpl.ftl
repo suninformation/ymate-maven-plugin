@@ -109,7 +109,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             BatchSQL batchSql = BatchSQL.create(Update.create(owner, dataSourceName, ${entityName}.class)
                     .field(fields)
                     .where(Cond.create(owner, dataSourceName)<#if multiPrimaryKey><#list primaryFields as p>
-                            <#if (p_index > 0)>.and()</#if>.eq(<@buildFieldName p.field/>)</#list><#else>.eq(<@buildFieldName primaryKey.field/>)</#if>));
+                            <#if (p_index > 0)>.and()</#if>.eqWrap(<@buildFieldName p.field/>)</#list><#else>.eq(<@buildFieldName primaryKey.field/>)</#if>));
             Arrays.stream(ids).map(id -> Params.create(values, <#if multiPrimaryKey><#list primaryFields as p>id.get${p.name?cap_first}()<#if p_has_next>, </#if></#list><#else>id</#if>)).forEachOrdered(batchSql::addParameter);
             return BatchUpdateOperator.parseEffectCounts(session.executeForUpdate(batchSql));
         });
@@ -118,20 +118,26 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>@Override
     public ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
         Cond cond = Cond.create(owner, dataSourceName)<#if (primaryFields?size > 0)><#if multiPrimaryKey><#list primaryFields as p>
-                .eq(<@buildFieldName p.field/>).param(id.get${p.name?cap_first}())</#list><#else>.eq(<@buildFieldName primaryKey.field/>).param(id)</#if></#if>;
-        return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class).where(Where.create(cond), true)
+                .eqWrap(<@buildFieldName p.field/>).param(id.get${p.name?cap_first}())</#list><#else>.eqWrap(<@buildFieldName primaryKey.field/>).param(id)</#if></#if>;
+        return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class).where(cond.buildWhere(), true)
                 .addExcludeField(excludedFields)
                 .findFirst();
     }</#if>
 
     @Override
     public IResultSet<${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, String dataSourceName, ${api.name?cap_first}Bean queryBean, Fields excludedFields, Page page) throws Exception {
+<#--        // ${entityName}.FieldConditionBuilder conditionBuilder = ${entityName}.conditionBuilder(owner, dataSourceName, "a");-->
+<#--        // Cond cond = Cond.create(owner, dataSourceName).eqOne()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>-->
+<#--        //      .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.and(conditionBuilder.${p.name}.rangeWrap(queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}())))</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>-->
+<#--        //      .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and(conditionBuilder.${p.name}.eqWrapValue(queryBean.get${p.name?cap_first}())))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>-->
+<#--        //      .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and(conditionBuilder.${p.name}.likeWrap(Like.create(queryBean.get${p.name?cap_first}()).full())))</#if></#if></#if></#list>;-->
         Cond cond = Cond.create(owner, dataSourceName).eqOne()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-                .range(<@buildFieldName p.field/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND)</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
-                .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eq(<@buildFieldName p.field/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
-                .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().like(<@buildFieldName p.field/>).param(Like.create(queryBean.get${p.name?cap_first}()).full()))</#if></#if></#if></#list>;
+               .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.rangeWrap(<@buildFieldName p.field/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND))</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
+               .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
+               .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if></#if></#list>;
         return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class)
-                .where(Where.create(cond), true)
+                .where(Where.create(cond)<#if (api.query?? && api.query.orderFields??)><#list api.query.orderFields as orderField>
+                                .orderBy${(orderField.type?lower_case)?cap_first}(<#if (orderField.prefix!"")?length != 0>"${orderField.prefix!""}", </#if><#if (orderField.value!"")?contains(".")>${orderField.value!""}<#else>"${orderField.value!""}"</#if>)</#list></#if>, true)
                 .addExcludeField(excludedFields)
                 .find(page);
     }</#if>

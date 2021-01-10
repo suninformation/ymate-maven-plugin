@@ -104,7 +104,7 @@ public class ${api.name?cap_first}Controller {
 
                          </#if></#list>, </#if><#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update) throws Exception {
         ${entityName} ${api.name?uncap_first} = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>), </#if>${api.name?uncap_first}Update.toBean());
-        return WebResult.builder().succeed().data(${api.name?uncap_first}.getId());
+        return WebResult.builder().succeed().dataAttr("id", ${api.name?uncap_first}.getId());
     }</#if>
 
     <#if !(api.settings??) || api.settings.enableUpdate!true><#if apidocs>@ApiAction(value = "${languageMap.update}", description = "")</#if>
