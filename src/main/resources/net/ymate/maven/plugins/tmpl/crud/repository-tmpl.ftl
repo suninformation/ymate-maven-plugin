@@ -1,5 +1,5 @@
 <#setting number_format="#">
-<#macro buildFieldName field><#if (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>Fields.field("${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if>)</#if></#macro>
+<#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>Fields.field("${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if>)</#if></#macro>
 <#macro toSetId><#if primaryKey?? && !primaryKey.autoIncrement>.id(buildPrimaryKey())<#elseif multiPrimaryKey>.id(id)</#if></#macro>
 /*
  * Copyright ${.now?string("yyyy")} the original author or authors.
@@ -105,20 +105,19 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         if (values == null || values.isEmpty()) {
             throw new NullArgumentException("values");
         }
-        return owner.openSession(session -> {
-            BatchSQL batchSql = BatchSQL.create(Update.create(owner, dataSourceName, ${entityName}.class)
-                    .field(fields)
-                    .where(Cond.create(owner, dataSourceName)<#if multiPrimaryKey><#list primaryFields as p>
-                            <#if (p_index > 0)>.and()</#if>.eqWrap(<@buildFieldName p.field/>)</#list><#else>.eq(<@buildFieldName primaryKey.field/>)</#if>));
-            Arrays.stream(ids).map(id -> Params.create(values, <#if multiPrimaryKey><#list primaryFields as p>id.get${p.name?cap_first}()<#if p_has_next>, </#if></#list><#else>id</#if>)).forEachOrdered(batchSql::addParameter);
-            return BatchUpdateOperator.parseEffectCounts(session.executeForUpdate(batchSql));
-        });
+        Update update = Update.create(owner, dataSourceName, ${entityName}.class)
+                .field(fields)
+                .where(Cond.create(owner, dataSourceName)<#if multiPrimaryKey><#list primaryFields as p>
+                        <#if (p_index > 0)>.and()</#if>.eqWrap(<@buildFieldName p.field true/>)</#list><#else>.eqWrap(<@buildFieldName primaryKey.field true/>)</#if>);
+        BatchSQL batchSql = BatchSQL.create(update);
+        Arrays.stream(ids).map(id -> Params.create(values, <#if multiPrimaryKey><#list primaryFields as p>id.get${p.name?cap_first}()<#if p_has_next>, </#if></#list><#else>id</#if>)).forEachOrdered(batchSql::addParameter);
+        return BatchUpdateOperator.parseEffectCounts(batchSql.execute(update.dataSourceName()));
     }</#if></#if>
 
     <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>@Override
     public ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
         Cond cond = Cond.create(owner, dataSourceName)<#if (primaryFields?size > 0)><#if multiPrimaryKey><#list primaryFields as p>
-                .eqWrap(<@buildFieldName p.field/>).param(id.get${p.name?cap_first}())</#list><#else>.eqWrap(<@buildFieldName primaryKey.field/>).param(id)</#if></#if>;
+                .eqWrap(<@buildFieldName p.field false/>).param(id.get${p.name?cap_first}())</#list><#else>.eqWrap(<@buildFieldName primaryKey.field false/>).param(id)</#if></#if>;
         return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class).where(cond.buildWhere(), true)
                 .addExcludeField(excludedFields)
                 .findFirst();
@@ -132,9 +131,9 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 <#--        //      .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and(conditionBuilder.${p.name}.eqWrapValue(queryBean.get${p.name?cap_first}())))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>-->
 <#--        //      .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and(conditionBuilder.${p.name}.likeWrap(Like.create(queryBean.get${p.name?cap_first}()).full())))</#if></#if></#if></#list>;-->
         Cond cond = Cond.create(owner, dataSourceName).eqOne()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-               .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.rangeWrap(<@buildFieldName p.field/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND))</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
-               .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
-               .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if></#if></#list>;
+               .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.rangeWrap(<@buildFieldName p.field false/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND))</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
+               .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field false/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
+               .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field false/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if></#if></#list>;
         return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class)
                 .where(Where.create(cond)<#if (api.query?? && api.query.orderFields??)><#list api.query.orderFields as orderField>
                                 .orderBy${(orderField.type?lower_case)?cap_first}(<#if (orderField.prefix!"")?length != 0>"${orderField.prefix!""}", </#if><#if (orderField.value!"")?contains(".")>${orderField.value!""}<#else>"${orderField.value!""}"</#if>)</#list></#if>, true)

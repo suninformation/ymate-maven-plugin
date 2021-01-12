@@ -10,7 +10,7 @@
                          @VNumeric(min = ${p.config.query.validation.numeric.min}, max = ${p.config.query.validation.numeric.max}, eq = ${p.config.query.validation.numeric.eq}, decimals = ${p.config.query.validation.numeric.decimals}<#if (p.config.query.validation.numeric.msg?length > 0)>, msg = "${p.config.query.validation.numeric.msg}"</#if>)</#if></#if><#if p.description?? && (p.description?length > 0)>
                          @VField(name = "${p.description}")</#if>
                          @RequestParam ${p.type!"String"}<#if array!false>[]</#if> ${p.name}</#macro>
-<#macro buildFieldName field><#if (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>Fields.field("${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if>)</#if></#macro>
+<#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>Fields.field("${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if>)</#if></#macro>
 /*
  * Copyright ${.now?string("yyyy")} the original author or authors.
  *
@@ -79,7 +79,7 @@ public class ${api.name?cap_first}Controller {
     public Object query(<#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first},
 
                         <#if apidocs>@ApiParam </#if>@VModel @ModelBind PageDTO page) throws Exception {
-        IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if hideInListFields?? && (hideInListFields?size > 0)>Fields.create(<#list hideInListFields as field><@buildFieldName field/><#if field_has_next>, </#if></#list>)<#else>null</#if>, page.toPage());
+        IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if hideInListFields?? && (hideInListFields?size > 0)>Fields.create(<#list hideInListFields as field><@buildFieldName field, false/><#if field_has_next>, </#if></#list>)<#else>null</#if>, page.toPage());
         return WebResult.builder().succeed().data(resultSet);
     }
 
@@ -134,7 +134,7 @@ public class ${api.name?cap_first}Controller {
                     </#if>@VLength(max = 100)
                     @VField(name = "${languageMap.reason}")
                     @RequestParam String reason</#if>) throws Exception {
-        int effectCounts = repository.update${api.name?cap_first}s(database, ArrayUtils.toArray(<#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>), Fields.create(<@buildFieldName p.field/>), Params.create(${s.value}));
+        int effectCounts = repository.update${api.name?cap_first}s(database, ArrayUtils.toArray(<#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>), Fields.create(<@buildFieldName p.field true/>), Params.create(${s.value}));
         return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
     }</#if></#list></#if></#list></#if>
 
@@ -152,7 +152,7 @@ public class ${api.name?cap_first}Controller {
     @RequestMapping("/export")
     public Object export(<#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first}) throws Exception {
         ExcelFileExportHelper exportHelper = ExcelFileExportHelper.bind(index -> {
-            IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if notExportFields?? && (notExportFields?size > 0)>Fields.create(<#list notExportFields as field><@buildFieldName field/><#if field_has_next>, </#if></#list>)<#else>null</#if>, Page.create(index).pageSize(10000).count(false));
+            IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if notExportFields?? && (notExportFields?size > 0)>Fields.create(<#list notExportFields as field><@buildFieldName field true/><#if field_has_next>, </#if></#list>)<#else>null</#if>, Page.create(index).pageSize(10000).count(false));
             if (resultSet != null && resultSet.isResultsAvailable()) {
                 return Collections.singletonMap("data", resultSet.getResultData());
             }
