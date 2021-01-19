@@ -21,11 +21,11 @@ package ${app.packageName}.repository.impl;
 <#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 import ${app.packageName}.bean.${api.name?cap_first}Bean;<#if !api.view>
 import ${app.packageName}.bean.${api.name?cap_first}UpdateBean;<#if multiPrimaryKey>
-import ${entityPackageName}.${api.name?cap_first}PK;<#else>import net.ymate.platform.commons.util.UUIDUtils;</#if></#if>
+import ${entityPackageName}.${api.name?cap_first}PK;<#else>
+import net.ymate.platform.commons.util.UUIDUtils;</#if></#if>
 import ${app.packageName}.repository.I${api.name?cap_first}Repository;
 import ${app.packageName}.vo.${api.name?cap_first}VO;
 import net.ymate.platform.commons.exception.DataVersionMismatchException;
-import net.ymate.platform.core.configuration.IConfiguration;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
@@ -37,7 +37,6 @@ import net.ymate.platform.persistence.jdbc.base.impl.BatchUpdateOperator;
 import net.ymate.platform.persistence.jdbc.query.*;
 import net.ymate.platform.persistence.jdbc.repo.IRepository;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
-import net.ymate.platform.persistence.jdbc.support.BaseEntity;
 import net.ymate.platform.persistence.jdbc.support.EntityStateWrapper;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
@@ -147,6 +146,9 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")>id == null<#else>StringUtils.isBlank(id)</#if>) {
             throw new NullArgumentException("id");
         }
+        if (StringUtils.isNotBlank(dataSourceName)) {
+            return owner.openSession(dataSourceName, session -> session.delete(${entityName}.class, id));
+        }
         return owner.openSession(session -> session.delete(${entityName}.class, id));
     }
 
@@ -156,11 +158,14 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         if (ArrayUtils.isEmpty(ids)) {
             throw new NullArgumentException("ids");
         }
+        if (StringUtils.isNotBlank(dataSourceName)) {
+            return owner.openSession(dataSourceName, session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, ids)));
+        }
         return owner.openSession(session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, ids)));
     }</#if></#if>
 
-    @Override
-    public IConfiguration getConfig() {
-        return null;
-    }
+<#--    @Override-->
+<#--    public IConfiguration getConfig() {-->
+<#--        return null;-->
+<#--    }-->
 }
