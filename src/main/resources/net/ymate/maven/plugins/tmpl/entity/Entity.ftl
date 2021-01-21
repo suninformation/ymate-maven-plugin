@@ -173,6 +173,15 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
             return this;
         }
 
+        public IDatabase dbOwner() {
+            return targetEntity.getDbOwner();
+        }
+
+        public Builder dbOwner(IDatabase dbOwner) {
+            targetEntity.setDbOwner(dbOwner);
+            return this;
+        }
+
         public String dataSourceName() {
             return targetEntity.getDataSourceName();
         }
