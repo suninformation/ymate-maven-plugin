@@ -16,6 +16,10 @@
 package net.ymate.maven.plugins;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
+import com.alibaba.fastjson.serializer.JSONSerializer;
+import com.alibaba.fastjson.serializer.ObjectSerializer;
 import net.ymate.platform.commons.DateTimeHelper;
 import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.util.DateTimeUtils;
@@ -43,6 +47,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -357,7 +362,15 @@ public class CrudMojo extends AbstractPersistenceMojo {
         cApi.setName(entityInfo.getName());
         cApi.setMapping("/" + EntityMeta.fieldNameToPropertyName(entityInfo.getTableName(), 0).replace('_', '/'));
         cApi.setQuery(new CQuery()
-                .setFroms(Collections.singletonList(new CFrom().setValue(String.format("%s.TABLE_NAME", entityName)).setType(QFrom.Type.TABLE))))
+                .setFroms(Collections.singletonList(new CFrom().setValue(String.format("%s.TABLE_NAME", entityName)).setType(QFrom.Type.TABLE)))
+                .setJoins(Collections.singletonList(new CJoin()
+                        .setFrom(new CFrom().setType(QFrom.Type.TABLE))
+                        .setOn(Collections.singletonList(new COn()
+                                .setField(new CField())
+                                .setOpt("EQ")
+                                .setWith(new CField())
+                                .setLogicalOpt(Cond.LogicalOpt.AND)))
+                        .setType(Join.Type.LEFT))))
                 .setSettings(new CSettings()
                         .setEnableCreate(!view)
                         .setEnableQuery(true)
@@ -419,6 +432,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setNumeric(new CVNumeric())
                                     .setRegex(new CVRegex())
                                     .setDataRange(new CVDataRange())
+                                    .setDateTime(new CVDateTime())
                                     .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))));
             if (!view && isStatus) {
                 cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName(languageMap.get("enable")).setMethodName("enable").setDescription(languageMap.get("enable")).setMapping("/enable").setValue("0"),
@@ -1668,6 +1682,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         private CFrom from;
 
+        @JSONField(serializeUsing = JoinTypeSerializer.class, deserializeUsing = JoinTypeSerializer.class)
         private Join.Type type;
 
         private List<COn> on;
@@ -1755,6 +1770,36 @@ public class CrudMojo extends AbstractPersistenceMojo {
         public COn setIgnorable(boolean ignorable) {
             this.ignorable = ignorable;
             return this;
+        }
+    }
+
+    public static class JoinTypeSerializer implements ObjectSerializer, ObjectDeserializer {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+            Object value = parser.parse();
+            if (value instanceof String) {
+                switch (((String) value).toUpperCase()) {
+                    case "INNER":
+                        return (T) Join.Type.INNER;
+                    case "RIGHT":
+                        return (T) Join.Type.RIGHT;
+                    default:
+                        return (T) Join.Type.LEFT;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public int getFastMatchToken() {
+            return 0;
+        }
+
+        @Override
+        public void write(JSONSerializer serializer, Object object, Object fieldName, Type fieldType, int features) throws IOException {
+            serializer.write(((Join.Type) object).name());
         }
     }
 }

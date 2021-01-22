@@ -163,9 +163,4 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         }
         return owner.openSession(session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, ids)));
     }</#if></#if>
-
-<#--    @Override-->
-<#--    public IConfiguration getConfig() {-->
-<#--        return null;-->
-<#--    }-->
 }
