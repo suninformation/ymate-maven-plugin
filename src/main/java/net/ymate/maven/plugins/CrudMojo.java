@@ -164,10 +164,16 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 properties.put("entityPackageName", StringUtils.substringBeforeLast(cApi.getEntityClass(), "."));
                                 //
                                 cApi.getProperties().forEach(cProperty -> {
+                                    CConfig cConfig = cProperty.getConfig();
+                                    CCreateOrUpdateConf cCreateOrUpdateConf = cConfig != null ? cConfig.getCreateOrUpdate() : null;
                                     if (StringUtils.equalsIgnoreCase(cProperty.getColumn(), "create_time") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
-                                        properties.put("createTimeProp", cProperty);
+                                        if (cCreateOrUpdateConf != null && cCreateOrUpdateConf.isEnabled()) {
+                                            properties.put("createTimeProp", cProperty);
+                                        }
                                     } else if (StringUtils.equalsIgnoreCase(cProperty.getColumn(), "last_modify_time") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
-                                        properties.put("lastModifyTimeProp", cProperty);
+                                        if (cCreateOrUpdateConf != null && cCreateOrUpdateConf.isEnabled()) {
+                                            properties.put("lastModifyTimeProp", cProperty);
+                                        }
                                     }
                                 });
                                 properties.put("hideInListFields", cApi.getProperties().stream().filter(CProperty::isHideInList).map(CProperty::getField).collect(Collectors.toList()));
@@ -434,9 +440,13 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setDataRange(new CVDataRange())
                                     .setDateTime(new CVDateTime())
                                     .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))));
-            if (!view && isStatus) {
-                cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName(languageMap.get("enable")).setMethodName("enable").setDescription(languageMap.get("enable")).setMapping("/enable").setValue("0"),
-                        new CStatusConf().setEnabled(true).setName(languageMap.get("disable")).setMethodName("Disable").setDescription(languageMap.get("disable")).setMapping("/disable").setValue("1")));
+            if (!view) {
+                if (isStatus) {
+                    cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName(languageMap.get("enable")).setMethodName("enable").setDescription(languageMap.get("enable")).setMapping("/enable").setValue("0"),
+                            new CStatusConf().setEnabled(true).setName(languageMap.get("disable")).setMethodName("Disable").setDescription(languageMap.get("disable")).setMapping("/disable").setValue("1")));
+                } else {
+                    cConfig.setStatus(Collections.singletonList(new CStatusConf()));
+                }
             }
             cProperty.setConfig(cConfig);
             //
