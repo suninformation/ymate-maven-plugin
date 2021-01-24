@@ -1,3 +1,4 @@
+#!/bin/bash
 export CATALINA_HOME="${catalina_home}"
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CATALINA_HOME/lib

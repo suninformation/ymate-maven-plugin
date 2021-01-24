@@ -28,7 +28,7 @@
  */
 package ${app.packageName}.controller;
 
-import ${api.entityClass};
+<#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 import ${app.packageName}.bean.*;
 import ${app.packageName}.dto.*;
 import ${app.packageName}.repository.I${api.name?cap_first}Repository;<#if multiPrimaryKey>
@@ -79,7 +79,7 @@ public class ${api.name?cap_first}Controller {
     public Object query(<#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first},
 
                         <#if apidocs>@ApiParam </#if>@VModel @ModelBind PageDTO page) throws Exception {
-        IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if hideInListFields?? && (hideInListFields?size > 0)>Fields.create(<#list hideInListFields as field><@buildFieldName field, false/><#if field_has_next>, </#if></#list>)<#else>null</#if>, page.toPage());
+        IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if hideInListFields?? && (hideInListFields?size > 0)>Fields.create(<#list hideInListFields as field><@buildFieldName field, false/><#if field_has_next>, </#if></#list>), </#if>page.toPage());
         return WebResult.builder().succeed().data(resultSet);
     }
 
@@ -90,7 +90,7 @@ public class ${api.name?cap_first}Controller {
     public Object detail(<#list primaryFields as p><@parseField p false/><#if p_has_next>,
 
                         </#if></#list>) throws Exception {
-        ${api.name?cap_first}VO ${api.name?uncap_first} = repository.query${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, null);
+        ${api.name?cap_first}VO ${api.name?uncap_first} = repository.query${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>);
         if (${api.name?uncap_first} != null) {
             return WebResult.succeed().data(${api.name?uncap_first});
         }
@@ -152,7 +152,7 @@ public class ${api.name?cap_first}Controller {
     @RequestMapping("/export")
     public Object export(<#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first}) throws Exception {
         ExcelFileExportHelper exportHelper = ExcelFileExportHelper.bind(index -> {
-            IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if notExportFields?? && (notExportFields?size > 0)>Fields.create(<#list notExportFields as field><@buildFieldName field true/><#if field_has_next>, </#if></#list>)<#else>null</#if>, Page.create(index).pageSize(10000).count(false));
+            IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if notExportFields?? && (notExportFields?size > 0)>Fields.create(<#list notExportFields as field><@buildFieldName field true/><#if field_has_next>, </#if></#list>), </#if>Page.create(index).pageSize(10000).count(false));
             if (resultSet != null && resultSet.isResultsAvailable()) {
                 return Collections.singletonMap("data", resultSet.getResultData());
             }

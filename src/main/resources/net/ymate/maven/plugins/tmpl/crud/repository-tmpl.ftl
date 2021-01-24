@@ -66,28 +66,39 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if !(api.settings??) || api.settings.enableCreate!true>@Override
     @Transaction
-    public ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception {<#if createTimeProp??>
-        Long now = System.currentTimeMillis();</#if>
-        ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<@toSetId/><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
-                .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if createTimeProp??>
-                .createTime(now)<#if lastModifyTimeProp??>
-                .lastModifyTime(now)</#if></#if>
-                .build();
-        return entity.save();
+    public ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception {<#if multiPrimaryKey>
+        if (id == null) {
+            throw new NullArgumentException("id");
+        }</#if>
+        if (updateBean != null) {<#if createTimeProp??>
+            Long now = System.currentTimeMillis();</#if>
+            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<@toSetId/><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
+                    .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if createTimeProp??>
+                    .createTime(now)<#if lastModifyTimeProp??>
+                    .lastModifyTime(now)</#if></#if>
+                    .build();
+            return entity.save();
+        }
+        return null;
     }
 
     @Override
     @Transaction
     public ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp??>, Long lastModifyTime</#if>) throws Exception {
-        ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName).id(id).build().load(IDBLocker.DEFAULT);
-        if (entity != null) {<#if lastModifyTimeProp??>
-            DataVersionMismatchException.comparisonVersion(entity.getLastModifyTime(), lastModifyTime);</#if>
-            //
-            EntityStateWrapper<${entityName}> stateWrapper = entity.stateWrapper();
-            stateWrapper.getEntity().bind()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
-                    .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if lastModifyTimeProp??>
-                    .lastModifyTime(System.currentTimeMillis())</#if>;
-            return stateWrapper.update();
+        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")>id == null<#else>StringUtils.isBlank(id)</#if>) {
+            throw new NullArgumentException("id");
+        }
+        if (updateBean != null) {
+            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName).id(id).build().load(IDBLocker.DEFAULT);
+            if (entity != null) {<#if lastModifyTimeProp??>
+                DataVersionMismatchException.comparisonVersion(entity.getLastModifyTime(), lastModifyTime);
+                //</#if>
+                EntityStateWrapper<${entityName}> stateWrapper = entity.stateWrapper();
+                stateWrapper.getEntity().bind()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
+                        .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if lastModifyTimeProp??>
+                        .lastModifyTime(System.currentTimeMillis())</#if>;
+                return stateWrapper.update();
+            }
         }
         return null;
     }
@@ -115,6 +126,9 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>@Override
     public ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
+        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")>id == null<#else>StringUtils.isBlank(id)</#if>) {
+            throw new NullArgumentException("id");
+        }
         Cond cond = Cond.create(owner, dataSourceName)<#if (primaryFields?size > 0)><#if multiPrimaryKey><#list primaryFields as p>
                 .eqWrap(<@buildFieldName p.field false/>).param(id.get${p.name?cap_first}())</#list><#else>.eqWrap(<@buildFieldName primaryKey.field false/>).param(id)</#if></#if>;
         return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class).where(cond.buildWhere(), true)
@@ -123,19 +137,31 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     }</#if>
 
     @Override
-    public IResultSet<${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, String dataSourceName, ${api.name?cap_first}Bean queryBean, Fields excludedFields, Page page) throws Exception {
+    public IResultSet<${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, String dataSourceName, ${api.name?cap_first}Bean queryBean, Cond otherCond, OrderBy orderBy, Fields excludedFields, Page page) throws Exception {
 <#--        // ${entityName}.FieldConditionBuilder conditionBuilder = ${entityName}.conditionBuilder(owner, dataSourceName, "a");-->
 <#--        // Cond cond = Cond.create(owner, dataSourceName).eqOne()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>-->
 <#--        //      .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.and(conditionBuilder.${p.name}.rangeWrap(queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}())))</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>-->
 <#--        //      .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and(conditionBuilder.${p.name}.eqWrapValue(queryBean.get${p.name?cap_first}())))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>-->
 <#--        //      .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and(conditionBuilder.${p.name}.likeWrap(Like.create(queryBean.get${p.name?cap_first}()).full())))</#if></#if></#if></#list>;-->
-        Cond cond = Cond.create(owner, dataSourceName).eqOne()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-               .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.rangeWrap(<@buildFieldName p.field false/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND))</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
-               .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field false/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
-               .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field false/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if></#if></#list>;
+        Cond cond = Cond.create(owner, dataSourceName);
+        if (queryBean != null) {
+            cond.eqOne()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
+                   .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.rangeWrap(<@buildFieldName p.field false/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND))</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
+                   .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field false/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
+                   .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field false/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if></#if></#list>;
+        }
+        if (otherCond != null && !otherCond.isEmpty()) {
+            cond.andIfNeed(otherCond);
+        }
+        Where where = Where.create(cond);
+        if (orderBy != null && !orderBy.isEmpty()) {
+            where.orderBy().orderBy(orderBy);
+        }<#if (api.query?? && api.query.orderFields??)> else {
+            where<#list api.query.orderFields as orderField>
+                .orderBy${(orderField.type?lower_case)?cap_first}(<#if (orderField.prefix!"")?length != 0>"${orderField.prefix!""}", </#if><#if (orderField.value!"")?contains(".")>${orderField.value!""}<#else>"${orderField.value!""}"</#if>)</#list>;
+        }</#if>
         return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class)
-                .where(Where.create(cond)<#if (api.query?? && api.query.orderFields??)><#list api.query.orderFields as orderField>
-                                .orderBy${(orderField.type?lower_case)?cap_first}(<#if (orderField.prefix!"")?length != 0>"${orderField.prefix!""}", </#if><#if (orderField.value!"")?contains(".")>${orderField.value!""}<#else>"${orderField.value!""}"</#if>)</#list></#if>, true)
+                .where(where, true)
                 .addExcludeField(excludedFields)
                 .find(page);
     }</#if>
