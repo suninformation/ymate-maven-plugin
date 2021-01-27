@@ -46,11 +46,11 @@ public interface I${api.name?cap_first}Repository {
 
     ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception;</#if>
 
-    <#if !(api.settings??) || api.settings.enableUpdate!true>default ${entityName} update${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp??>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception {
-        return update${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, updateBean<#if lastModifyTimeProp??>, lastModifyTime</#if>);
+    <#if !(api.settings??) || api.settings.enableUpdate!true>default ${entityName} update${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception {
+        return update${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, lastModifyTime</#if>);
     }
 
-    ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp??>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception;
+    ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception;
 
     default int update${api.name?cap_first}s(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids, Fields fields, Params values) throws Exception {
         return update${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), ids, fields, values);

@@ -114,10 +114,10 @@ public class ${api.name?cap_first}Controller {
 
                          </#if></#list>,
 
-                         <#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update<#if lastModifyTimeProp??>,
+                         <#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>,
 
                          <@parseField lastModifyTimeProp false/></#if>) throws Exception {
-        if (repository.update${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, ${api.name?uncap_first}Update.toBean()<#if lastModifyTimeProp??>, ${lastModifyTimeProp.name}</#if>) != null) {
+        if (repository.update${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, ${api.name?uncap_first}Update.toBean()<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.name}</#if>) != null) {
             return WebResult.builder().succeed();
         }
         return WebResult.builder(WebErrorCode.resourceNotFoundOrNotExist());

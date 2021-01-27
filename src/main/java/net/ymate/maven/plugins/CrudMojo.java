@@ -79,6 +79,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
     @Parameter(property = "apidocs")
     private boolean apidocs;
 
+    @Parameter(property = "test")
+    private boolean test;
+
     /**
      * 自定义语言
      */
@@ -144,6 +147,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             getLog().info("CRUD has bean locked.");
                         } else {
                             File path = new File(String.format("%s/src/main/java", getBasedir()), cApp.getPackageName().replace(".", "/"));
+                            File testPath = new File(String.format("%s/src/test/java", getBasedir()), cApp.getPackageName().replace(".", "/"));
                             //
                             Map<String, Object> props = new HashMap<>();
                             props.put("app", cApp);
@@ -164,16 +168,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 properties.put("entityPackageName", StringUtils.substringBeforeLast(cApi.getEntityClass(), "."));
                                 //
                                 cApi.getProperties().forEach(cProperty -> {
-                                    CConfig cConfig = cProperty.getConfig();
-                                    CCreateOrUpdateConf cCreateOrUpdateConf = cConfig != null ? cConfig.getCreateOrUpdate() : null;
                                     if (StringUtils.equalsIgnoreCase(cProperty.getColumn(), "create_time") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
-                                        if (cCreateOrUpdateConf != null && cCreateOrUpdateConf.isEnabled()) {
-                                            properties.put("createTimeProp", cProperty);
-                                        }
+                                        properties.put("createTimeProp", cProperty);
                                     } else if (StringUtils.equalsIgnoreCase(cProperty.getColumn(), "last_modify_time") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
-                                        if (cCreateOrUpdateConf != null && cCreateOrUpdateConf.isEnabled()) {
-                                            properties.put("lastModifyTimeProp", cProperty);
-                                        }
+                                        properties.put("lastModifyTimeProp", cProperty);
                                     }
                                 });
                                 properties.put("hideInListFields", cApi.getProperties().stream().filter(CProperty::isHideInList).map(CProperty::getField).collect(Collectors.toList()));
@@ -191,6 +189,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 doWriterTemplateFile(new File(path, String.format("repository/I%sRepository.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-interface-tmpl", properties);
                                 doWriterTemplateFile(new File(path, String.format("repository/impl/%sRepository.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-tmpl", properties);
                                 doWriterTemplateFile(new File(path, String.format("controller/%sController.java", StringUtils.capitalize(cApi.getName()))), "/crud/controller-tmpl", properties);
+                                if (test) {
+                                    doWriterTemplateFile(new File(testPath, String.format("repository/impl/%sRepositoryTest.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-test", properties);
+                                    doWriterTemplateFile(new File(testPath, String.format("controller/%sControllerTest.java", StringUtils.capitalize(cApi.getName()))), "/crud/controller-test", properties);
+                                }
                                 if (cApi.getSettings() == null || cApi.getSettings().enableQuery) {
                                     hasQuery = true;
                                     doWriterTemplateFile(new File(path, String.format("dto/%sDTO.java", StringUtils.capitalize(cApi.getName()))), "/crud/dto-tmpl", properties);
@@ -204,6 +206,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             }
                             if (hasQuery) {
                                 doWriterTemplateFile(new File(path, "dto/PageDTO.java"), "/crud/page-dto-tmpl", props);
+                            }
+                            if (test) {
+                                doWriterTemplateFile(new File(testPath, "RepositoryTestSuite.java"), "/crud/repository-test-suite", props);
+                                doWriterTemplateFile(new File(testPath, "ControllerTestSuite.java"), "/crud/controller-test-suite", props);
                             }
                         }
                     }
@@ -718,6 +724,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         private boolean primary;
 
+        private boolean foreign;
+
         private boolean autoIncrement;
 
         private boolean export;
@@ -768,6 +776,14 @@ public class CrudMojo extends AbstractPersistenceMojo {
         public CProperty setPrimary(boolean primary) {
             this.primary = primary;
             return this;
+        }
+
+        public boolean isForeign() {
+            return foreign;
+        }
+
+        public void setForeign(boolean foreign) {
+            this.foreign = foreign;
         }
 
         public boolean isAutoIncrement() {
