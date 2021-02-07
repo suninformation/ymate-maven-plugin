@@ -70,11 +70,8 @@ public class ${api.name?cap_first}DTO implements Serializable {
     public ${api.name?cap_first}Bean toBean() {
         ${api.name?cap_first}Bean.Builder builder = ${api.name?cap_first}Bean.builder()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else>
                 .${p.name}(${p.name})</#if></#if></#list>;<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-        DateTimeValue ${p.name}Value = DateTimeValue.get("${p.name}");
-        if (${p.name}Value != null) {
-            builder.start${p.name?cap_first}(${p.name}Value.isNullStartDate() ? null : ${p.name}Value.getStartDateTimeMillis());
-            builder.end${p.name?cap_first}(${p.name}Value.isNullEndDate() ? null : ${p.name}Value.getEndDateTimeMillis());
-        }</#if></#if></#list>
+        DateTimeValue.get("${p.name}", ${p.name}Value -> builder.start${p.name?cap_first}(${p.name}Value.getStartDateTimeMillisOrNull())
+                .end${p.name?cap_first}(${p.name}Value.getEndDateTimeMillisOrNull()));</#if></#if></#list>
         return builder.build();
     }
 
