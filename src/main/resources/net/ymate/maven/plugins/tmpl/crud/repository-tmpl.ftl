@@ -156,7 +156,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         Where where = Where.create(cond);
         if (orderBy != null && !orderBy.isEmpty()) {
             where.orderBy().orderBy(orderBy);
-        }<#if (api.query?? && api.query.orderFields??)> else {
+        }<#if (api.query?? && api.query.orderFields?? && api.query.orderFields?size > 0)> else {
             where<#list api.query.orderFields as orderField>
                 .orderBy${(orderField.type?lower_case)?cap_first}(<#if (orderField.prefix!"")?length != 0>"${orderField.prefix!""}", </#if><#if (orderField.value!"")?contains(".")>${orderField.value!""}<#else>"${orderField.value!""}"</#if>)</#list>;
         }</#if>
