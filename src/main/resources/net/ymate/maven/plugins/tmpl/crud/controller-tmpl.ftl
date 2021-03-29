@@ -151,14 +151,13 @@ public class ${api.name?cap_first}Controller {
     <#if !(api.settings??) || api.settings.enableExport!true><#if apidocs>@ApiAction(value = "${languageMap.export}", description = "", notes = "${languageMap.notes}")</#if>
     @RequestMapping("/export")
     public Object export(<#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}DTO ${api.name?uncap_first}) throws Exception {
-        ExcelFileExportHelper exportHelper = ExcelFileExportHelper.bind(index -> {
+        File resultFile =  ExcelFileExportHelper.bind(index -> {
             IResultSet<${api.name?cap_first}VO> resultSet = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}.toBean(), <#if notExportFields?? && (notExportFields?size > 0)>Fields.create(<#list notExportFields as field><@buildFieldName field true/><#if field_has_next>, </#if></#list>), </#if>Page.create(index).pageSize(10000).count(false));
             if (resultSet != null && resultSet.isResultsAvailable()) {
-                return Collections.singletonMap("data", resultSet.getResultData());
+                return resultSet.getResultData();
             }
             return null;
-        });
-        File resultFile = exportHelper.export(${api.name?cap_first}VO.class);
+        }).export(${api.name?cap_first}VO.class);
         if (resultFile != null) {
             return View.binaryView(resultFile).useAttachment(resultFile.getName());
         }
