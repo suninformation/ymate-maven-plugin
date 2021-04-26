@@ -284,7 +284,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
         public FieldConditionBuilder(IDatabase owner, String dataSourceName, String prefix) {
             super(owner, dataSourceName, prefix);
         }
-        <#list entityInfo.fields as field>
+        <#list entityInfo.constFields as field>
 
         public FieldCondition ${field.varName}() {
             return createFieldCondition(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.columnName?upper_case});

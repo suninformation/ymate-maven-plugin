@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ${config.packageName}.${config.classSuffix};
+package ${config.packageName}.${config.classSuffix?lower_case};
 
 <#if (config.useStateSupport)>import net.ymate.platform.core.beans.annotation.PropertyState;</#if>
 import net.ymate.platform.core.persistence.annotation.Comment;
