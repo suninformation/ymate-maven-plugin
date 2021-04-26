@@ -9,7 +9,7 @@
                          @VMobile(regex = "${p.config.query.validation.mobile.regex!""}"<#if (p.config.query.validation.mobile.msg?length > 0)>, msg = "${p.config.query.validation.mobile.msg}"</#if><#if (p.config.query.validation.mobile.msg?length > 0)>, msg = "${p.config.query.validation.mobile.msg}"</#if>)</#if><#if p.config.query.validation.numeric?? && p.config.query.validation.numeric.enabled>
                          @VNumeric(min = ${p.config.query.validation.numeric.min}, max = ${p.config.query.validation.numeric.max}, eq = ${p.config.query.validation.numeric.eq}, decimals = ${p.config.query.validation.numeric.decimals}<#if (p.config.query.validation.numeric.msg?length > 0)>, msg = "${p.config.query.validation.numeric.msg}"</#if>)</#if></#if><#if p.description?? && (p.description?length > 0)>
                          @VField(name = "${p.description}")</#if>
-                         @RequestParam ${p.type!"String"}<#if array!false>[]</#if> ${p.name}</#macro>
+                         @RequestParam <#if array!false>@SplitArrayWith ${p.type!"String"}[]<#else>${p.type!"String"}</#if> ${p.name}</#macro>
 <#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>Fields.field("${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if>)</#if></#macro>
 /*
  * Copyright ${.now?string("yyyy")} the original author or authors.
@@ -128,13 +128,13 @@ public class ${api.name?cap_first}Controller {
     @Transaction
     public Object ${s.methodName?uncap_first}(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
 
-                    </#if></#list><#else><@parseField primaryKey false/></#if><#if s.reason>,
+                    </#if></#list><#else><@parseField primaryKey true/></#if><#if s.reason>,
 
                     <#if apidocs>@ApiParam
                     </#if>@VLength(max = 100)
                     @VField(name = "${languageMap.reason}")
                     @RequestParam String reason</#if>) throws Exception {
-        int effectCounts = repository.update${api.name?cap_first}s(database, ArrayUtils.toArray(<#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>), Fields.create(<@buildFieldName p.field true/>), Params.create(${s.value}));
+        int effectCounts = repository.update${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, Fields.create(<@buildFieldName p.field true/>), Params.create(${s.value}));
         return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
     }</#if></#list></#if></#list></#if>
 
@@ -144,7 +144,7 @@ public class ${api.name?cap_first}Controller {
     public Object remove(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
 
                          </#if></#list><#else><@parseField primaryKey true/></#if>) throws Exception {
-        int effectCounts = repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>);
+        int effectCounts = repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>);
         return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
     }</#if></#if>
 
