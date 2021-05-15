@@ -286,7 +286,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
         }
         <#list entityInfo.constFields as field>
 
-        public FieldCondition ${field.varName}() {
+        public FieldCondition ${field.attrName}() {
             return createFieldCondition(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.columnName?upper_case});
         }
         </#list>
