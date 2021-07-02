@@ -114,6 +114,7 @@ public class EntityMojo extends AbstractPersistenceMojo {
                 } else {
                     ConsoleTableBuilder consoleTableBuilder = ConsoleTableBuilder.create(10).escape();
                     System.out.printf("%s_NAME: %s%n", view ? "VIEW" : "TABLE", tableInfo.getName());
+                    System.out.printf("COMMENT: %s%n", StringUtils.trimToEmpty(tableInfo.getComment()));
                     if (ConsoleTableBuilder.TYPE_MARKDOWN.equals(getFormat())) {
                         System.out.println();
                         consoleTableBuilder.markdown();

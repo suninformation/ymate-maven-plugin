@@ -372,6 +372,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
         String entityName = String.format("%s%s", entityInfo.getName(), scaffold.isUseClassSuffix() ? StringUtils.capitalize(scaffold.getClassSuffix()) : StringUtils.EMPTY);
         cApi.setEntityClass(String.format("%s.%s.%s", scaffold.getPackageName(), StringUtils.lowerCase(scaffold.getClassSuffix()), entityName));
         cApi.setName(entityInfo.getName());
+        cApi.setDescription(entityInfo.getTableComment());
         cApi.setMapping("/" + EntityMeta.fieldNameToPropertyName(entityInfo.getTableName(), 0).replace('_', '/'));
         cApi.setQuery(new CQuery()
                 .setFroms(Collections.singletonList(new CFrom().setValue(String.format("%s.TABLE_NAME", entityName)).setType(QFrom.Type.TABLE)))

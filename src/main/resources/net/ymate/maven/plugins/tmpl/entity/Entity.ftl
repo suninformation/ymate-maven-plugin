@@ -37,7 +37,8 @@ import org.apache.commons.lang3.StringUtils;</#if>
  *
  * @author YMP (https://www.ymate.net/)
  */
-@Entity(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.TABLE_NAME)
+@Entity(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.TABLE_NAME)<#if entityInfo.tableComment??>
+@Comment("${entityInfo.tableComment}")</#if>
 public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if> extends <#if (config.useBaseEntity)>BaseEntity<${entityInfo.primaryKeyType}><#else>BaseEntity<${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>, ${entityInfo.primaryKeyType}></#if> {
 
     private static final long serialVersionUID = 1L;
