@@ -36,13 +36,13 @@ public final class PageDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    <#if apidocs>@ApiParam(description = "${languageMap.page}<br>${languageMap.page_description}")
+    <#if apidocs>@ApiParam(description = "${languageMap.page}<br/>${languageMap.page_description}")
     </#if>@VNumeric(min = 1)
     @VField(name = "${languageMap.page}")
     @RequestParam(defaultValue = "1")
     private Integer page;
 
-    <#if apidocs>@ApiParam(description = "${languageMap.pageSize}<br>${languageMap.pageSize_description}")
+    <#if apidocs>@ApiParam(description = "${languageMap.pageSize}<br/>${languageMap.pageSize_description}")
     </#if>@VNumeric(min = 20, max = 200)
     @VField(name = "${languageMap.pageSize}")
     @RequestParam(defaultValue = "20")
