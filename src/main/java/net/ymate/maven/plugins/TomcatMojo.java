@@ -61,9 +61,9 @@ public class TomcatMojo extends AbstractMojo {
     };
 
     /**
-     * Tomcat8/9需要复制的文件列表
+     * 可选文件复制列表
      */
-    private static final String[] V8_COPY_FILES = {
+    private static final String[] OPTIONAL_COPY_FILES = {
             "conf/jaspic-providers.xml",
             "conf/jaspic-providers.xsd",
             "conf/tomcat-users.xsd"
@@ -84,7 +84,7 @@ public class TomcatMojo extends AbstractMojo {
     @Parameter(property = "hostAlias")
     private String hostAlias;
 
-    @Parameter(property = "tomcatVersion", defaultValue = "7")
+    @Parameter(property = "tomcatVersion", defaultValue = "8")
     private int tomcatVersion;
 
     @Parameter(property = "serverPort", defaultValue = "8005")
@@ -125,7 +125,10 @@ public class TomcatMojo extends AbstractMojo {
     private void doMakeDirs(File parent) {
         if (parent.mkdir()) {
             for (String dirName : NEED_MK_DIRS) {
-                new File(parent, dirName).mkdir();
+                File targetDir = new File(parent, dirName);
+                if (!targetDir.mkdir()) {
+                    getLog().warn(String.format("Failed to create directory '%s'.", targetDir.getPath()));
+                }
             }
         }
     }
@@ -134,8 +137,8 @@ public class TomcatMojo extends AbstractMojo {
         for (String fileName : NEED_COPY_FILES) {
             FileUtils.copyFile(new File(catalinaHome, fileName), new File(parent, fileName));
         }
-        if (tomcatVersion == 8 || tomcatVersion == 9) {
-            for (String fileName : V8_COPY_FILES) {
+        if (tomcatVersion > 6) {
+            for (String fileName : OPTIONAL_COPY_FILES) {
                 File targetFile = new File(catalinaHome, fileName);
                 if (targetFile.exists() && targetFile.isFile()) {
                     FileUtils.copyFile(targetFile, new File(parent, fileName));
@@ -159,9 +162,9 @@ public class TomcatMojo extends AbstractMojo {
             props.put("catalina_home", catalinaHome);
             props.put("catalina_base", parent.getPath());
             if (tomcatVersion <= 0) {
-                tomcatVersion = 7;
-            } else if (tomcatVersion < 6 || tomcatVersion > 9) {
-                throw new IllegalArgumentException("'tomcatVersion' invalid, only supports 6, 7, 8, 9");
+                tomcatVersion = 8;
+            } else if (tomcatVersion < 6 || tomcatVersion > 10) {
+                throw new IllegalArgumentException("'tomcatVersion' invalid, only supports 6, 7, 8, 9, 10");
             }
             hostName = StringUtils.trimToEmpty(hostName);
             hostAlias = StringUtils.trimToEmpty(hostAlias);
