@@ -15,14 +15,12 @@
  */
 package net.ymate.maven.plugins.support;
 
-import net.ymate.apidocs.Docs;
 import net.ymate.apidocs.IDocs;
 import net.ymate.apidocs.impl.DefaultDocsConfigurable;
 import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.core.*;
 import net.ymate.platform.core.i18n.II18nEventHandler;
 import net.ymate.platform.core.impl.DefaultApplicationConfigureParser;
-import net.ymate.platform.webmvc.WebMVC;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,8 +51,7 @@ public class DefaultApplicationCreator implements IApplicationCreator {
                         return ResourceUtils.getResourceAsStream("META-INF/" + resourceName, getClass());
                     }
                 })
-                .includedModules(IDocs.MODULE_NAME, Docs.class.getName())
-                .excludedModules(WebMVC.class.getName())
+                .includedModules(IDocs.MODULE_NAME)
                 .addModuleConfigurers(DefaultDocsConfigurable.builder().build()).build();
         return new Application(new AbstractApplicationConfigureFactory() {
             @Override

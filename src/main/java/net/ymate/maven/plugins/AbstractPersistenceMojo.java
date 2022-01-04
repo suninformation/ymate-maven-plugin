@@ -15,15 +15,14 @@
  */
 package net.ymate.maven.plugins;
 
-import net.ymate.apidocs.Docs;
 import net.ymate.platform.core.*;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.impl.DefaultApplicationConfigureParser;
 import net.ymate.platform.core.persistence.IPersistenceConfig;
 import net.ymate.platform.persistence.jdbc.IDatabaseConfig;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseConfigurable;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseDataSourceConfigurable;
-import net.ymate.platform.webmvc.WebMVC;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -53,7 +52,7 @@ public abstract class AbstractPersistenceMojo extends AbstractMojo {
             throw new MojoExecutionException(String.format("'%s' parameter is not set in the configuration file!", connectionUrlKey));
         }
         IApplicationConfigurer configurer = ApplicationConfigureBuilder.builder(DefaultApplicationConfigureParser.defaultEmpty()).runEnv(IApplication.Environment.DEV)
-                .excludedModules(WebMVC.class.getName(), Docs.class.getName())
+                .includedModules(JDBC.class.getName())
                 .addModuleConfigurers(DefaultDatabaseConfigurable.builder()
                         .addDataSources(DefaultDatabaseDataSourceConfigurable.builder(IPersistenceConfig.DEFAULT_STR)
                                 .connectionUrl(connectionUrl)

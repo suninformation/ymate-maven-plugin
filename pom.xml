@@ -212,16 +212,6 @@
             <groupId>net.ymate.apidocs</groupId>
             <artifactId>ymate-apidocs-core</artifactId>
             <version>${ymate.apidocs.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.ymate.platform</groupId>
-                    <artifactId>ymate-platform-cache</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.ymate.platform</groupId>
-                    <artifactId>ymate-platform-validation</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 </project>
