@@ -17,6 +17,7 @@ package net.ymate.maven.plugins;
 
 import freemarker.template.TemplateException;
 import net.ymate.platform.commons.ConsoleTableBuilder;
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.Application;
 import net.ymate.platform.core.IApplication;
@@ -76,6 +77,7 @@ public class EntityMojo extends AbstractPersistenceMojo {
             application.initialize();
             //
             Scaffold.Builder builder = Scaffold.builder(application, false);
+            builder.outputPath(ExpressionUtils.bind(builder.outputPath()).set(RuntimeUtils.ROOT, getBasedir()).getResult());
             String namedFilterClass = application.getParam(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS);
             if (StringUtils.isNotBlank(namedFilterClass)) {
                 builder.namedFilter((INamedFilter) buildRuntimeClassLoader(mavenProject).loadClass(namedFilterClass).newInstance());
