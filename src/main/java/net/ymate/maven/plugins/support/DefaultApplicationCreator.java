@@ -22,6 +22,7 @@ import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.core.*;
 import net.ymate.platform.core.i18n.II18nEventHandler;
 import net.ymate.platform.core.impl.DefaultApplicationConfigureParser;
+import net.ymate.platform.webmvc.WebMVC;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +54,7 @@ public class DefaultApplicationCreator implements IApplicationCreator {
                     }
                 })
                 .includedModules(IDocs.MODULE_NAME, Docs.class.getName())
+                .excludedModules(WebMVC.class.getName())
                 .addModuleConfigurers(DefaultDocsConfigurable.builder().build()).build();
         return new Application(new AbstractApplicationConfigureFactory() {
             @Override

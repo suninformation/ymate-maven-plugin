@@ -67,20 +67,20 @@ public class DbQueryMojo extends AbstractPersistenceMojo {
             application.initialize();
             //
             List<String> columns = dateColumns != null ? Arrays.asList(dateColumns) : Collections.emptyList();
-            ResultSetHelper.ColumnRender columnRender = columns.isEmpty() ? null : (columnName, value) -> columns.contains(columnName) ? DateTimeUtils.formatTime(BlurObject.bind(value).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS) : value;
+            ResultSetHelper.IColumnRenderer columnRenderer = columns.isEmpty() ? null : (columnName, value) -> columns.contains(columnName) ? DateTimeUtils.formatTime(BlurObject.bind(value).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS) : value;
             //
             IResultSet<Object[]> resultSet = SQL.create(application.getModuleManager().getModule(JDBC.class), sql).find(new ArrayResultSetHandler(), Page.createIfNeed(pageSize > 0 && page <= 0 ? 1 : page, page > 0 && pageSize <= 0 ? Page.DEFAULT_PAGE_SIZE : pageSize));
             if (resultSet.isResultsAvailable()) {
                 ResultSetHelper resultSetHelper = ResultSetHelper.bind(resultSet);
                 switch (StringUtils.lowerCase(getFormat())) {
                     case ConsoleTableBuilder.TYPE_CSV:
-                        System.out.println(resultSetHelper.toCsv(columnRender));
+                        System.out.println(resultSetHelper.toCsv(columnRenderer));
                         break;
                     case ConsoleTableBuilder.TYPE_MARKDOWN:
-                        System.out.println(resultSetHelper.toMarkdown(columnRender));
+                        System.out.println(resultSetHelper.toMarkdown(columnRenderer));
                         break;
                     default:
-                        System.out.println(resultSetHelper.toString(columnRender));
+                        System.out.println(resultSetHelper.toString(columnRenderer));
                 }
             }
             getLog().info("------------------------------------------------------------------------");
