@@ -1,6 +1,6 @@
 <#setting number_format="#">
 <#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>"${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if></#if></#macro>
-<#macro toSetId><#if primaryKey?? && !primaryKey.autoIncrement>.id(buildPrimaryKey())<#elseif multiPrimaryKey>.id(id)</#if></#macro>
+<#macro toSetId><#if primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(buildPrimaryKey())<#elseif multiPrimaryKey>.id(id)</#if></#macro>
 /*
  * Copyright ${.now?string("yyyy")} the original author or authors.
  *
@@ -89,7 +89,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             throw new NullArgumentException("id");
         }
         if (updateBean != null) {
-            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName).id(id).build().load(IDBLocker.DEFAULT);
+            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<#if primaryKey??>.${primaryKey.name!"id"}<#elseif multiPrimaryKey>.id</#if>(id).build().load(IDBLocker.DEFAULT);
             if (entity != null) {<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
                 DataVersionMismatchException.comparisonVersion(entity.getLastModifyTime(), lastModifyTime);
                 //</#if>

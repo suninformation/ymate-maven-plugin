@@ -375,15 +375,15 @@ public class CrudMojo extends AbstractPersistenceMojo {
         cApi.setDescription(entityInfo.getTableComment());
         cApi.setMapping("/" + EntityMeta.fieldNameToPropertyName(entityInfo.getTableName(), 0).replace('_', '/'));
         cApi.setQuery(new CQuery()
-                .setFroms(Collections.singletonList(new CFrom().setValue(String.format("%s.TABLE_NAME", entityName)).setType(QFrom.Type.TABLE)))
-                .setJoins(Collections.singletonList(new CJoin()
-                        .setFrom(new CFrom().setType(QFrom.Type.TABLE))
-                        .setOn(Collections.singletonList(new COn()
-                                .setField(new CField())
-                                .setOpt("EQ")
-                                .setWith(new CField())
-                                .setLogicalOpt(Cond.LogicalOpt.AND)))
-                        .setType(Join.Type.LEFT))))
+                        .setFroms(Collections.singletonList(new CFrom().setValue(String.format("%s.TABLE_NAME", entityName)).setType(QFrom.Type.TABLE)))
+                        .setJoins(Collections.singletonList(new CJoin()
+                                .setFrom(new CFrom().setType(QFrom.Type.TABLE))
+                                .setOn(Collections.singletonList(new COn()
+                                        .setField(new CField())
+                                        .setOpt("EQ")
+                                        .setWith(new CField())
+                                        .setLogicalOpt(Cond.LogicalOpt.AND)))
+                                .setType(Join.Type.LEFT))))
                 .setSettings(new CSettings()
                         .setEnableCreate(!view)
                         .setEnableQuery(true)
@@ -415,11 +415,11 @@ public class CrudMojo extends AbstractPersistenceMojo {
                     .setDescription(attr.getRemarks())
                     .setField(new CField().setValue(String.format("%s.FIELDS.%S", entityName, attr.getColumnName())));
             //
-            boolean isRegion = StringUtils.equals(attr.getColumnName(), "create_time");
+            boolean isRegion = StringUtils.equalsAnyIgnoreCase(attr.getColumnName(), "create_time", "createTime", "createAt");
             if (isRegion) {
-                cApi.getQuery().setOrderFields(Collections.singletonList(new COrderField().setValue(String.format("%s.FIELDS.CREATE_TIME", entityName)).setType(QOrderField.Type.DESC)));
+                cApi.getQuery().setOrderFields(Collections.singletonList(new COrderField().setValue(String.format("%s.FIELDS.%S", entityName, attr.getColumnName())).setType(QOrderField.Type.DESC)));
             }
-            boolean isVersion = StringUtils.equals(attr.getColumnName(), "last_modify_time");
+            boolean isVersion = StringUtils.equalsAnyIgnoreCase(attr.getColumnName(), "last_modify_time", "lastModifyTime");
             boolean isStatus = StringUtils.equals(attr.getVarName(), "status");
             boolean isRequired = !view && entityInfo.getNonNullableFields().contains(attr);
             CConfig cConfig = new CConfig()

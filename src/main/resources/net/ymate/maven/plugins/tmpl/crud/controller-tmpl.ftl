@@ -134,7 +134,7 @@ public class ${api.name?cap_first}Controller {
                     </#if>@VLength(max = 100)
                     @VField(name = "${languageMap.reason}")
                     @RequestParam String reason</#if>) throws Exception {
-        int effectCounts = repository.update${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>, Fields.create(<@buildFieldName p.field true/>), Params.create(${s.value}));
+        int effectCounts = repository.update${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>, Fields.create(<@buildFieldName p.field true/>), Params.create(${s.value}));
         return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
     }</#if></#list></#if></#list></#if>
 
@@ -144,7 +144,7 @@ public class ${api.name?cap_first}Controller {
     public Object remove(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
 
                          </#if></#list><#else><@parseField primaryKey true/></#if>) throws Exception {
-        int effectCounts = repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>)<#else>${primaryKey.name}</#if>);
+        int effectCounts = repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>);
         return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
     }</#if></#if>
 

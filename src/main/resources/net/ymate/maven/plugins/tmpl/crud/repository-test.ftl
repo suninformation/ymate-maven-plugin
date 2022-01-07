@@ -1,6 +1,6 @@
 <#setting number_format="#">
 <#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>"${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if></#if></#macro>
-<#macro toSetId><#if primaryKey?? && !primaryKey.autoIncrement>.id(buildPrimaryKey())<#elseif multiPrimaryKey>.id(id)</#if></#macro>
+<#macro toSetId><#if primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(buildPrimaryKey())<#elseif multiPrimaryKey>.id(id)</#if></#macro>
 /*
  * Copyright ${.now?string("yyyy")} the original author or authors.
  *
