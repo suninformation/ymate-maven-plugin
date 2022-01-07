@@ -70,8 +70,8 @@ public class ${api.name?cap_first}DTO implements Serializable {
     public ${api.name?cap_first}Bean toBean() {
         ${api.name?cap_first}Bean.Builder builder = ${api.name?cap_first}Bean.builder()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else>
                 .${p.name}(${p.name})</#if></#if></#list>;<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-        DateTimeValue.get("${p.name}", ${p.name}Value -> builder.start${p.name?cap_first}(${p.name}Value.getStartDateTimeMillisOrNull())
-                .end${p.name?cap_first}(${p.name}Value.getEndDateTimeMillisOrNull()));</#if></#if></#list>
+        DateTimeValue.get("${p.name}", ${p.name}Value -> builder.start${p.name?cap_first}(<#if p.type?ends_with('sql.Date')>new java.sql.Date(${p.name}Value.getStartDateTimeMillis())<#else>${p.name}Value.<#if p.type?ends_with('Timestamp') || p.type?ends_with('util.Date')>getStartDateTimestampOrNull<#else>getStartDateTimeMillisOrNull</#if>()</#if>)
+                .end${p.name?cap_first}(<#if p.type?ends_with('sql.Date')>new java.sql.Date(${p.name}Value.getEndDateTimeMillis())<#else>${p.name}Value.<#if p.type?ends_with('Timestamp') || p.type?ends_with('util.Date')>getEndDateTimestampOrNull<#else>getEndDateTimeMillisOrNull</#if>()</#if>));</#if></#if></#list>
         return builder.build();
     }
 
