@@ -168,9 +168,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 properties.put("entityPackageName", StringUtils.substringBeforeLast(cApi.getEntityClass(), "."));
                                 //
                                 cApi.getProperties().forEach(cProperty -> {
-                                    if (StringUtils.equalsIgnoreCase(cProperty.getColumn(), "create_time") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
+                                    if (StringUtils.equalsAnyIgnoreCase(cProperty.getColumn(), "create_time", "createTime", "create_at", "createAt") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
                                         properties.put("createTimeProp", cProperty);
-                                    } else if (StringUtils.equalsIgnoreCase(cProperty.getColumn(), "last_modify_time") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
+                                    } else if (StringUtils.equalsAnyIgnoreCase(cProperty.getColumn(), "last_modify_time", "lastModifyTime", "last_modify_at", "lastModifyAt") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
                                         properties.put("lastModifyTimeProp", cProperty);
                                     }
                                 });
@@ -415,11 +415,11 @@ public class CrudMojo extends AbstractPersistenceMojo {
                     .setDescription(attr.getRemarks())
                     .setField(new CField().setValue(String.format("%s.FIELDS.%S", entityName, attr.getColumnName())));
             //
-            boolean isRegion = StringUtils.equalsAnyIgnoreCase(attr.getColumnName(), "create_time", "createTime", "createAt");
+            boolean isRegion = StringUtils.equalsAnyIgnoreCase(attr.getColumnName(), "create_time", "createTime", "create_at", "createAt");
             if (isRegion) {
                 cApi.getQuery().setOrderFields(Collections.singletonList(new COrderField().setValue(String.format("%s.FIELDS.%S", entityName, attr.getColumnName())).setType(QOrderField.Type.DESC)));
             }
-            boolean isVersion = StringUtils.equalsAnyIgnoreCase(attr.getColumnName(), "last_modify_time", "lastModifyTime");
+            boolean isVersion = StringUtils.equalsAnyIgnoreCase(attr.getColumnName(), "last_modify_time", "lastModifyTime", "last_modify_at", "lastModifyAt");
             boolean isStatus = StringUtils.equals(attr.getVarName(), "status");
             boolean isRequired = !view && entityInfo.getNonNullableFields().contains(attr);
             CConfig cConfig = new CConfig()
