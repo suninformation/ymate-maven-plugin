@@ -405,7 +405,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
             if (!entityInfo.getPrimaryKeys().isEmpty()) {
                 isPrimary = entityInfo.getPrimaryKeys().contains(attr);
             } else {
-                isPrimary = StringUtils.equals(entityInfo.getPrimaryKeyName(), attr.getColumnName());
+                isPrimary = StringUtils.equals(entityInfo.getPrimaryKeyName(), attr.getVarName());
             }
             cProperty.setPrimary(isPrimary)
                     .setAutoIncrement(attr.isAutoIncrement())
