@@ -41,7 +41,7 @@ import org.junit.runners.Suite;
 @EnableAutoScan
 @EnableBeanProxy
 @EnableDevMode
-public class ControllerTestSuite {
+public class ControllerTests {
 
     @BeforeClass
     public static void setUpClass() {

@@ -208,8 +208,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 doWriterTemplateFile(new File(path, "dto/PageDTO.java"), "/crud/page-dto-tmpl", props);
                             }
                             if (test) {
-                                doWriterTemplateFile(new File(testPath, "RepositoryTestSuite.java"), "/crud/repository-test-suite", props);
-                                doWriterTemplateFile(new File(testPath, "ControllerTestSuite.java"), "/crud/controller-test-suite", props);
+                                doWriterTemplateFile(new File(testPath, "RepositoryTests.java"), "/crud/repository-test-suite", props);
+                                doWriterTemplateFile(new File(testPath, "ControllerTests.java"), "/crud/controller-test-suite", props);
                             }
                         }
                     }

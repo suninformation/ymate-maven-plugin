@@ -1,6 +1,7 @@
 <#setting number_format="#">
 <#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>"${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if></#if></#macro>
-<#macro toSetId><#if primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(buildPrimaryKey())<#elseif multiPrimaryKey>.id(id)</#if></#macro>
+<#macro toSetIdValue><#if primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(id)<#elseif multiPrimaryKey>.id(id)</#if></#macro>
+<#macro toSetFieldValue field><#if field.type?ends_with("String")>"${field.demoValue}"<#elseif field.type?ends_with("Long")><#if ((field.demoValue!"")?trim)?length == 0>0L<#else>${field.demoValue?trim}L</#if><#elseif field.type?ends_with("Integer")><#if ((field.demoValue!"")?trim)?length == 0>0<#else>${field.demoValue?trim}</#if><#elseif field.type?ends_with("Double")><#if ((field.demoValue!"")?trim)?length == 0>0d<#else>${field.demoValue?trim}d</#if><#elseif field.type?ends_with("Float")><#if ((field.demoValue!"")?trim)?length == 0>0f<#else>${field.demoValue?trim}f</#if><#elseif field.type?ends_with("Boolean")><#if ((field.demoValue!"")?trim)?length == 0>false<#else>${field.demoValue?trim}</#if></#if></#macro>
 /*
  * Copyright ${.now?string("yyyy")} the original author or authors.
  *
@@ -88,7 +89,7 @@ public class ${api.name?cap_first}RepositoryTest {
         ${p.type} ${p.name} = null;</#list>
         ${api.name?cap_first}PK id = ${api.name?cap_first}Repository.buildPrimaryKey(<#list nonAutoPrimaryFields as p>${p.name}<#if p_has_next>, </#if></#list>);</#if>
         ${api.name?cap_first}UpdateBean ${api.name?uncap_first}UpdateBean = ${api.name?cap_first}UpdateBean.builder()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
-                .${p.name}(<#if p.type?ends_with("String")>"${p.demoValue}"<#elseif p.type?ends_with("Long")>${p.demoValue!"0"}L<#elseif p.type?ends_with("Double")>${p.demoValue!"0"}d<#elseif p.type?ends_with("Float")>${p.demoValue!"0"}f<#else>${p.demoValue!"0"}</#if>)</#if></#list>
+                .${p.name}(<@toSetFieldValue p/>)</#if></#list>
                 .build();
         ${entityName} ${api.name?uncap_first} = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>id, </#if>${api.name?uncap_first}UpdateBean);
         Assert.assertNotNull(${api.name?uncap_first});
@@ -101,10 +102,10 @@ public class ${api.name?cap_first}RepositoryTest {
         Assert.assertNotNull(id);<#elseif primaryKey?? && !primaryKey.autoIncrement>
         ${primaryKey.type} id = null;
         Assert.assertNotNull(id);</#if>
-        ${entityName} ${api.name?uncap_first} = ${entityName}.builder(database).id(id).build().load();
+        ${entityName} ${api.name?uncap_first} = ${entityName}.builder(database)<@toSetIdValue/>.build().load();
         if (${api.name?uncap_first} != null) {
             ${api.name?cap_first}UpdateBean ${api.name?uncap_first}UpdateBean = ${api.name?cap_first}UpdateBean.builder()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
-                    .${p.name}(<#if p.type?ends_with("String")>"${p.demoValue}"<#elseif p.type?ends_with("Long")>${p.demoValue!"0"}L<#elseif p.type?ends_with("Double")>${p.demoValue!"0"}d<#elseif p.type?ends_with("Float")>${p.demoValue!"0"}f<#else>${p.demoValue!"0"}</#if>)</#if></#list>
+                    .${p.name}(<@toSetFieldValue p/>)</#if></#list>
                     .build();
             ${api.name?uncap_first} = repository.update${api.name?cap_first}(database, id, ${api.name?uncap_first}UpdateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${api.name?uncap_first}.getLastModifyTime()</#if>);
         }
@@ -143,7 +144,7 @@ public class ${api.name?cap_first}RepositoryTest {
         ${api.name?cap_first}Bean ${api.name?uncap_first}Bean = ${api.name?cap_first}Bean.builder()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
             .start${p.name?cap_first}(0L)
             .end${p.name?cap_first}(0L)<#else>
-            .${p.name}(<#if p.type?ends_with("String")>"${p.demoValue}"<#elseif p.type?ends_with("Long")>${p.demoValue!"0"}L<#elseif p.type?ends_with("Double")>${p.demoValue!"0"}d<#elseif p.type?ends_with("Float")>${p.demoValue!"0"}f<#else>${p.demoValue!"0"}</#if>)</#if></#if></#list>
+            .${p.name}(<@toSetFieldValue p/>)</#if></#if></#list>
             .build();
         Cond otherCond = null;
         OrderBy orderBy = null;
