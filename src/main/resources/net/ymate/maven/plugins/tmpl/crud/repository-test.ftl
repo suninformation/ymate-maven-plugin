@@ -87,11 +87,12 @@ public class ${api.name?cap_first}RepositoryTest {
     <#if !(api.settings??) || api.settings.enableCreate!true>@Test
     public void testCreate${api.name?cap_first}() throws Exception {<#if multiPrimaryKey><#list nonAutoPrimaryFields as p>
         ${p.type} ${p.name} = null;</#list>
-        ${api.name?cap_first}PK id = ${api.name?cap_first}Repository.buildPrimaryKey(<#list nonAutoPrimaryFields as p>${p.name}<#if p_has_next>, </#if></#list>);</#if>
+        ${api.name?cap_first}PK id = ${api.name?cap_first}Repository.buildPrimaryKey(<#list nonAutoPrimaryFields as p>${p.name}<#if p_has_next>, </#if></#list>);<#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>
+        ${primaryKey.type} ${primaryKey.name} = null;</#if>
         ${api.name?cap_first}UpdateBean ${api.name?uncap_first}UpdateBean = ${api.name?cap_first}UpdateBean.builder()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
                 .${p.name}(<@toSetFieldValue p/>)</#if></#list>
                 .build();
-        ${entityName} ${api.name?uncap_first} = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>id, </#if>${api.name?uncap_first}UpdateBean);
+        ${entityName} ${api.name?uncap_first} = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.name}, </#if>${api.name?uncap_first}UpdateBean);
         Assert.assertNotNull(${api.name?uncap_first});
     }
 

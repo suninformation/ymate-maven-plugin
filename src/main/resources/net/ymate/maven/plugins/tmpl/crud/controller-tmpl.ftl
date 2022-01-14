@@ -102,8 +102,12 @@ public class ${api.name?cap_first}Controller {
     @Transaction
     public Object create(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
 
-                         </#if></#list>, </#if><#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update) throws Exception {
-        ${entityName} ${api.name?uncap_first} = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>), </#if>${api.name?uncap_first}Update.toBean());
+                         </#if></#list>,
+
+                         <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled><@parseField primaryKey false/>,
+
+                         </#if><#if apidocs>@ApiParam </#if>@VModel @ModelBind ${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update) throws Exception {
+        ${entityName} ${api.name?uncap_first} = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>), <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.name}, </#if>${api.name?uncap_first}Update.toBean());
         return WebResult.builder().succeed().dataAttr("id", ${api.name?uncap_first}.getId());
     }</#if>
 

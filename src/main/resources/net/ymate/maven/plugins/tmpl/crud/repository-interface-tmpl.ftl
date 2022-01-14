@@ -40,37 +40,37 @@ import net.ymate.platform.persistence.jdbc.query.OrderBy;
  */
 public interface I${api.name?cap_first}Repository {
 
-    <#if !api.view><#if !(api.settings??) || api.settings.enableCreate!true>default ${entityName} create${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK id, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception {
-        return create${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id, </#if>updateBean);
+    <#if !api.view><#if !(api.settings??) || api.settings.enableCreate!true>default ${entityName} create${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.type} ${primaryKey.name}, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception {
+        return create${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.name}, </#if>updateBean);
     }
 
-    ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception;</#if>
+    ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.type} ${primaryKey.name}, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception;</#if>
 
-    <#if !(api.settings??) || api.settings.enableUpdate!true>default ${entityName} update${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception {
-        return update${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, lastModifyTime</#if>);
+    <#if !(api.settings??) || api.settings.enableUpdate!true>default ${entityName} update${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception {
+        return update${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>, updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, lastModifyTime</#if>);
     }
 
-    ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception;
+    ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} lastModifyTime</#if>) throws Exception;
 
-    default int update${api.name?cap_first}s(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids, Fields fields, Params values) throws Exception {
-        return update${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), ids, fields, values);
+    default int update${api.name?cap_first}s(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>, Fields fields, Params values) throws Exception {
+        return update${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>, fields, values);
     }
 
-    int update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids, Fields fields, Params values) throws Exception;</#if></#if>
+    int update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>, Fields fields, Params values) throws Exception;</#if></#if>
 
-    <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>default ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
-        return query${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, excludedFields);
+    <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>default ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, Fields excludedFields) throws Exception {
+        return query${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>, excludedFields);
     }
 
-    default ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id) throws Exception {
-        return query${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id, null);
+    default ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
+        return query${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>, null);
     }
 
-    default ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id) throws Exception {
-        return query${api.name?cap_first}(owner, dataSourceName, id, null);
+    default ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
+        return query${api.name?cap_first}(owner, dataSourceName, <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>, null);
     }
 
-    ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception;</#if>
+    ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, Fields excludedFields) throws Exception;</#if>
 
     default IResultSet<${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, ${api.name?cap_first}Bean queryBean, Fields excludedFields, Page page) throws Exception {
         return query${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), queryBean, null, null, excludedFields, page);
@@ -98,15 +98,15 @@ public interface I${api.name?cap_first}Repository {
 
     IResultSet<${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, String dataSourceName, ${api.name?cap_first}Bean queryBean, Cond otherCond, OrderBy orderBy, Fields excludedFields, Page page) throws Exception;</#if>
 
-    <#if !api.view><#if !(api.settings??) || api.settings.enableRemove!true>default int remove${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id) throws Exception {
-        return remove${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), id);
+    <#if !api.view><#if !(api.settings??) || api.settings.enableRemove!true>default int remove${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
+        return remove${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>);
     }
 
     int remove${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id) throws Exception;
 
-    default int remove${api.name?cap_first}s(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids) throws Exception {
-        return remove${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), ids);
+    default int remove${api.name?cap_first}s(IDatabase owner, <#if multiPrimaryKey>${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>) throws Exception {
+        return remove${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>);
     }
 
-    int remove${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids) throws Exception;</#if></#if>
+    int remove${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>) throws Exception;</#if></#if>
 }

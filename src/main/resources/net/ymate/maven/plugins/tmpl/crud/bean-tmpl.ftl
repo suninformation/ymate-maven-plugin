@@ -1,4 +1,73 @@
 <#setting number_format="#">
+<#macro buildField p>
+    <#if p.config?? && p.config.query?? && p.config.query.enabled><#if (p.description??)>
+        /**
+        * ${p.description}
+        */</#if>
+        <#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>private ${p.type} start${p.name?cap_first};
+
+            private ${p.type} end${p.name?cap_first};<#else>private ${p.type} ${p.name};</#if></#if>
+
+</#macro>
+<#macro buildGetAndSet p>
+    <#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
+        public ${p.type} getStart${p.name?cap_first}() {
+            return start${p.name?cap_first};
+        }
+
+        public void setStart${p.name?cap_first}(${p.type} start${p.name?cap_first}) {
+            this.start${p.name?cap_first} = start${p.name?cap_first};
+        }
+
+        public ${p.type} getEnd${p.name?cap_first}() {
+            return end${p.name?cap_first};
+        }
+
+        public void setEnd${p.name?cap_first}(${p.type} end${p.name?cap_first}) {
+        this.end${p.name?cap_first} = end${p.name?cap_first};
+        }
+
+    <#else>
+        public ${p.type} get${p.name?cap_first}() {
+            return ${p.name};
+        }
+
+        public void set${p.name?cap_first}(${p.type} ${p.name}) {
+            this.${p.name} = ${p.name};
+        }
+
+    </#if></#if>
+</#macro>
+<#macro builderGetAndSet p>
+    <#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
+
+        public ${p.type} start${p.name?cap_first}() {
+            return targetBean.getStart${p.name?cap_first}();
+        }
+
+        public Builder start${p.name?cap_first}(${p.type} start${p.name?cap_first}) {
+            targetBean.setStart${p.name?cap_first}(start${p.name?cap_first});
+            return this;
+        }
+
+        public ${p.type} end${p.name?cap_first}() {
+            return targetBean.getEnd${p.name?cap_first}();
+        }
+
+        public Builder end${p.name?cap_first}(${p.type} end${p.name?cap_first}) {
+            targetBean.setEnd${p.name?cap_first}(end${p.name?cap_first});
+            return this;
+        }<#else>
+
+        public ${p.type} ${p.name}() {
+            return targetBean.get${p.name?cap_first}();
+        }
+
+        public Builder ${p.name}(${p.type} ${p.name}) {
+            targetBean.set${p.name?cap_first}(${p.name});
+            return this;
+        }</#if></#if>
+</#macro>
 /*
  * Copyright ${.now?string("yyyy")} the original author or authors.
  *
@@ -33,46 +102,22 @@ public class ${api.name?cap_first}Bean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if (p.description??)>
-    /**
-     * ${p.description}
-     */</#if>
-    <#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>private ${p.type} start${p.name?cap_first};
+<#if multiPrimaryKey><#list primaryFields as p>
+    <@buildField p/>
+</#list><#elseif primaryKey??><@buildField primaryKey/></#if>
 
-    private ${p.type} end${p.name?cap_first};<#else>private ${p.type} ${p.name};</#if></#if>
-
-</#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-    public ${p.type} getStart${p.name?cap_first}() {
-        return start${p.name?cap_first};
-    }
-
-    public void setStart${p.name?cap_first}(${p.type} start${p.name?cap_first}) {
-        this.start${p.name?cap_first} = start${p.name?cap_first};
-    }
-
-    public ${p.type} getEnd${p.name?cap_first}() {
-        return end${p.name?cap_first};
-    }
-
-    public void setEnd${p.name?cap_first}(${p.type} end${p.name?cap_first}) {
-        this.end${p.name?cap_first} = end${p.name?cap_first};
-    }
-
-    <#else>
-    public ${p.type} get${p.name?cap_first}() {
-        return ${p.name};
-    }
-
-    public void set${p.name?cap_first}(${p.type} ${p.name}) {
-        this.${p.name} = ${p.name};
-    }
-
-</#if></#if></#list>
+<#list normalFields as p>
+    <@buildField p/>
+</#list><#if multiPrimaryKey><#list primaryFields as p>
+    <@buildGetAndSet p/>
+</#list><#elseif primaryKey??><@buildGetAndSet primaryKey/></#if><#list normalFields as p><@buildGetAndSet p/></#list>
 <#if (normalFields?size > 0)>
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
+        return new ToStringBuilder(this)<#if multiPrimaryKey><#list primaryFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled>
+            .append("${p.name}", ${p.name})</#if></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.query?? && primaryKey.config.query.enabled>
+            .append("${primaryKey.name}", ${primaryKey.name})</#if><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
             .append("start${p.name?cap_first}", start${p.name?cap_first})
             .append("end${p.name?cap_first}", end${p.name?cap_first})<#else>
             .append("${p.name}", ${p.name})</#if></#if></#list>
@@ -101,33 +146,8 @@ public class ${api.name?cap_first}Bean implements Serializable {
 
         public ${api.name?cap_first}Bean build() {
             return targetBean;
-        }<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-
-        public ${p.type} start${p.name?cap_first}() {
-            return targetBean.getStart${p.name?cap_first}();
-        }
-
-        public Builder start${p.name?cap_first}(${p.type} start${p.name?cap_first}) {
-            targetBean.setStart${p.name?cap_first}(start${p.name?cap_first});
-            return this;
-        }
-
-        public ${p.type} end${p.name?cap_first}() {
-            return targetBean.getEnd${p.name?cap_first}();
-        }
-
-        public Builder end${p.name?cap_first}(${p.type} end${p.name?cap_first}) {
-            targetBean.setEnd${p.name?cap_first}(end${p.name?cap_first});
-            return this;
-        }<#else>
-
-        public ${p.type} ${p.name}() {
-            return targetBean.get${p.name?cap_first}();
-        }
-
-        public Builder ${p.name}(${p.type} ${p.name}) {
-            targetBean.set${p.name?cap_first}(${p.name});
-            return this;
-        }</#if></#if></#list>
+        }<#if multiPrimaryKey><#list primaryFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled>
+        <@builderGetAndSet p/></#if></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.query?? && primaryKey.config.query.enabled>
+        <@builderGetAndSet primaryKey/></#if><#list normalFields as p><@builderGetAndSet p/></#list>
     }</#if>
 }

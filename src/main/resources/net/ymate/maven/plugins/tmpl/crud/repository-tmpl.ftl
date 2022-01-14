@@ -1,6 +1,9 @@
 <#setting number_format="#">
 <#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>"${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if></#if></#macro>
 <#macro toSetId><#if primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(buildPrimaryKey())<#elseif multiPrimaryKey>.id(id)</#if></#macro>
+<#macro buildFieldCond p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>.exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field false/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if><#else><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
+                .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.rangeWrap(<@buildFieldName p.field false/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND))<#else><#if p.field??>
+                .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field false/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#if></#macro>
 /*
  * Copyright ${.now?string("yyyy")} the original author or authors.
  *
@@ -66,13 +69,13 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if !(api.settings??) || api.settings.enableCreate!true>@Override
     @Transaction
-    public ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception {<#if multiPrimaryKey>
-        if (id == null) {
-            throw new NullArgumentException("id");
+    public ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.type} ${primaryKey.name}, </#if> ${api.name?cap_first}UpdateBean updateBean) throws Exception {<#if multiPrimaryKey>
+        if (<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if> == null) {
+            throw new NullArgumentException("<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>");
         }</#if>
         if (updateBean != null) {<#if createTimeProp?? && !createTimeProp.foreign>
             Long now = System.currentTimeMillis();</#if>
-            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<@toSetId/><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
+            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<#if !multiPrimaryKey && primaryKey?? && !primaryKey.config.createOrUpdate.enabled><@toSetId/><#elseif primaryKey??>.${primaryKey.name}(${primaryKey.name})</#if><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
                     .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if createTimeProp?? && !createTimeProp.foreign>
                     .createTime(now)<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
                     .lastModifyTime(now)</#if></#if>
@@ -84,12 +87,12 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     @Override
     @Transaction
-    public ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, Long lastModifyTime</#if>) throws Exception {
-        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")>id == null<#else>StringUtils.isBlank(id)</#if>) {
-            throw new NullArgumentException("id");
+    public ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, Long lastModifyTime</#if>) throws Exception {
+        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")><#if multiPrimaryKey>id<#else>${primaryKey.name}</#if> == null<#else>StringUtils.isBlank(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>)</#if>) {
+            throw new NullArgumentException("<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>");
         }
         if (updateBean != null) {
-            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<#if primaryKey??>.${primaryKey.name!"id"}<#elseif multiPrimaryKey>.id</#if>(id).build().load(IDBLocker.DEFAULT);
+            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<#if primaryKey??>.${primaryKey.name!"id"}<#elseif multiPrimaryKey>.id</#if>(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>).build().load(IDBLocker.DEFAULT);
             if (entity != null) {<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
                 DataVersionMismatchException.comparisonVersion(entity.getLastModifyTime(), lastModifyTime);
                 //</#if>
@@ -105,9 +108,9 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     @Override
     @Transaction
-    public int update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids, Fields fields, Params values) throws Exception {
-        if (ArrayUtils.isEmpty(ids)) {
-            throw new NullArgumentException("ids");
+    public int update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>, Fields fields, Params values) throws Exception {
+        if (ArrayUtils.isEmpty(<#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>)) {
+            throw new NullArgumentException("<#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>");
         }
         if (fields == null || fields.isEmpty()) {
             throw new NullArgumentException("fields");
@@ -120,17 +123,17 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                 .where(Cond.create(owner, dataSourceName)<#if multiPrimaryKey><#list primaryFields as p>
                         <#if (p_index > 0)>.and()</#if>.eqWrap(<@buildFieldName p.field true/>)</#list><#else>.eqWrap(<@buildFieldName primaryKey.field true/>)</#if>);
         BatchSQL batchSql = BatchSQL.create(update);
-        Arrays.stream(ids).map(id -> Params.create(values, <#if multiPrimaryKey><#list primaryFields as p>id.get${p.name?cap_first}()<#if p_has_next>, </#if></#list><#else>id</#if>)).forEachOrdered(batchSql::addParameter);
+        Arrays.stream(<#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>).map(id -> Params.create(values, <#if multiPrimaryKey><#list primaryFields as p>id.get${p.name?cap_first}()<#if p_has_next>, </#if></#list><#else>id</#if>)).forEachOrdered(batchSql::addParameter);
         return BatchUpdateOperator.parseEffectCounts(batchSql.execute(update.dataSourceName()));
     }</#if></#if>
 
     <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>@Override
-    public ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id, Fields excludedFields) throws Exception {
-        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")>id == null<#else>StringUtils.isBlank(id)</#if>) {
-            throw new NullArgumentException("id");
+    public ${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, Fields excludedFields) throws Exception {
+        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")><#if multiPrimaryKey>id<#else>${primaryKey.name}</#if> == null<#else>StringUtils.isBlank(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>)</#if>) {
+            throw new NullArgumentException("<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>");
         }
         Cond cond = Cond.create(owner, dataSourceName)<#if (primaryFields?size > 0)><#if multiPrimaryKey><#list primaryFields as p>
-                .eqWrap(<@buildFieldName p.field false/>).param(id.get${p.name?cap_first}())</#list><#else>.eqWrap(<@buildFieldName primaryKey.field false/>).param(id)</#if></#if>;
+                .eqWrap(<@buildFieldName p.field false/>).param(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>.get${p.name?cap_first}())</#list><#else>.eqWrap(<@buildFieldName primaryKey.field false/>).param(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>)</#if></#if>;
         return Query.build(owner, dataSourceName, ${api.name?cap_first}VO.class).where(cond.buildWhere(), true)
                 .addExcludeField(excludedFields)
                 .findFirst();
@@ -145,10 +148,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 <#--        //      .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and(conditionBuilder.${p.name}.likeWrap(Like.create(queryBean.get${p.name?cap_first}()).full())))</#if></#if></#if></#list>;-->
         Cond cond = Cond.create(owner, dataSourceName);
         if (queryBean != null) {
-            cond.eqOne()<#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
-                   .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.rangeWrap(<@buildFieldName p.field false/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND))</#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && !p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
-                   .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field false/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#list><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>
-                   .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field false/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if></#if></#list>;
+            cond.eqOne()<#if multiPrimaryKey><#list primaryFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><@buildFieldCond p/></#if></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.query?? && primaryKey.config.query.enabled><@buildFieldCond primaryKey/></#if><#list normalFields as p><@buildFieldCond p/></#list>;
         }
         if (otherCond != null && !otherCond.isEmpty()) {
             cond.andIfNeed(otherCond);
@@ -168,25 +168,25 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if !api.view><#if !(api.settings??) || api.settings.enableRemove!true>@Override
     @Transaction
-    public int remove${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if> id) throws Exception {
-        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")>id == null<#else>StringUtils.isBlank(id)</#if>) {
-            throw new NullArgumentException("id");
+    public int remove${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
+        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")><#if multiPrimaryKey>id<#else>${primaryKey.name}</#if> == null<#else>StringUtils.isBlank(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>)</#if>) {
+            throw new NullArgumentException("<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>");
         }
         if (StringUtils.isNotBlank(dataSourceName)) {
-            return owner.openSession(dataSourceName, session -> session.delete(${entityName}.class, id));
+            return owner.openSession(dataSourceName, session -> session.delete(${entityName}.class, <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>));
         }
-        return owner.openSession(session -> session.delete(${entityName}.class, id));
+        return owner.openSession(session -> session.delete(${entityName}.class, <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>));
     }
 
     @Override
     @Transaction
-    public int remove${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK<#else>${primaryKey.type}</#if>[] ids) throws Exception {
-        if (ArrayUtils.isEmpty(ids)) {
-            throw new NullArgumentException("ids");
+    public int remove${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>) throws Exception {
+        if (ArrayUtils.isEmpty(<#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>)) {
+            throw new NullArgumentException("<#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>");
         }
         if (StringUtils.isNotBlank(dataSourceName)) {
-            return owner.openSession(dataSourceName, session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, ids)));
+            return owner.openSession(dataSourceName, session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, <#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>)));
         }
-        return owner.openSession(session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, ids)));
+        return owner.openSession(session -> BatchUpdateOperator.parseEffectCounts(session.delete(${entityName}.class, <#if multiPrimaryKey>ids<#else>${primaryKey.name}s</#if>)));
     }</#if></#if>
 }
