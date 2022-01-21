@@ -108,7 +108,7 @@ public class ${api.name?cap_first}RepositoryTest {
             ${api.name?cap_first}UpdateBean ${api.name?uncap_first}UpdateBean = ${api.name?cap_first}UpdateBean.builder()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
                     .${p.name}(<@toSetFieldValue p/>)</#if></#list>
                     .build();
-            ${api.name?uncap_first} = repository.update${api.name?cap_first}(database, id, ${api.name?uncap_first}UpdateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${api.name?uncap_first}.getLastModifyTime()</#if>);
+            ${api.name?uncap_first} = repository.update${api.name?cap_first}(database, id, ${api.name?uncap_first}UpdateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${api.name?uncap_first}.get${lastModifyTimeProp.name?cap_first}()</#if>);
         }
         Assert.assertNotNull(${api.name?uncap_first});
     }

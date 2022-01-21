@@ -77,8 +77,8 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             Long now = System.currentTimeMillis();</#if>
             ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<#if !multiPrimaryKey && primaryKey?? && !primaryKey.config.createOrUpdate.enabled><@toSetId/><#elseif primaryKey??>.${primaryKey.name}(${primaryKey.name})</#if><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
                     .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if createTimeProp?? && !createTimeProp.foreign>
-                    .createTime(now)<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
-                    .lastModifyTime(now)</#if></#if>
+                    .${createTimeProp.name}(now)<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
+                    .${lastModifyTimeProp.name}(now)</#if></#if>
                     .build();
             return entity.save();
         }
@@ -87,19 +87,19 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     @Override
     @Transaction
-    public ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, Long lastModifyTime</#if>) throws Exception {
+    public ${entityName} update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, ${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} ${lastModifyTimeProp.name}</#if>) throws Exception {
         if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")><#if multiPrimaryKey>id<#else>${primaryKey.name}</#if> == null<#else>StringUtils.isBlank(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>)</#if>) {
             throw new NullArgumentException("<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>");
         }
         if (updateBean != null) {
             ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<#if primaryKey??>.${primaryKey.name!"id"}<#elseif multiPrimaryKey>.id</#if>(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>).build().load(IDBLocker.DEFAULT);
             if (entity != null) {<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
-                DataVersionMismatchException.comparisonVersion(entity.getLastModifyTime(), lastModifyTime);
+                DataVersionMismatchException.comparisonVersion(entity.get${lastModifyTimeProp.name?cap_first}(), ${lastModifyTimeProp.name});
                 //</#if>
                 EntityStateWrapper<${entityName}> stateWrapper = entity.stateWrapper();
                 stateWrapper.getEntity().bind()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
                         .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
-                        .lastModifyTime(System.currentTimeMillis())</#if>;
+                        .${lastModifyTimeProp.name}(System.currentTimeMillis())</#if>;
                 return stateWrapper.update();
             }
         }
