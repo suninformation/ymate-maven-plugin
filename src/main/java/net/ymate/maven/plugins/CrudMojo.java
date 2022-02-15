@@ -67,6 +67,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
     @Parameter(property = "file", defaultValue = DEFAULT_CRUD_FILE)
     private String file;
 
+    @Parameter(property = "action")
+    private String action;
+
     @Parameter(property = "filter")
     private String[] filter;
 
@@ -128,6 +131,11 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 languageMap.put("pageSize", "Records per page");
                 languageMap.put("pageSize_description", "Value range: >=20 and <=200");
             }
+            boolean useCdn = false;
+            if (StringUtils.equalsIgnoreCase(action, "ui-cdn")) {
+                action = "ui";
+                useCdn = true;
+            }
             //
             File cfgFile = defaultCfgFileIfNeed(null);
             if (cfgFile.exists()) {
@@ -147,7 +155,11 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             getLog().info("CRUD has bean locked.");
                         } else {
                             File path = new File(String.format("%s/src/main/java", getBasedir()), cApp.getPackageName().replace(".", "/"));
+                            File viewPath = new File(String.format("%s/src/main/webapp", getBasedir()));
                             File testPath = new File(String.format("%s/src/test/java", getBasedir()), cApp.getPackageName().replace(".", "/"));
+                            //
+                            Map<String, Object> navMap = new HashMap<>();
+                            Map<String, Object> routeMap = new HashMap<>();
                             //
                             Map<String, Object> props = new HashMap<>();
                             props.put("app", cApp);
@@ -172,6 +184,12 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                         properties.put("createTimeProp", cProperty);
                                     } else if (StringUtils.equalsAnyIgnoreCase(cProperty.getColumn(), "last_modify_time", "lastModifyTime", "last_modify_at", "lastModifyAt") && StringUtils.equals(cProperty.getType(), Long.class.getName())) {
                                         properties.put("lastModifyTimeProp", cProperty);
+                                    } else if (StringUtils.equalsIgnoreCase(cProperty.getColumn(), "status")) {
+                                        properties.put("hasStatus", true);
+                                    } else if (StringUtils.equalsIgnoreCase(cProperty.getColumn(), "type")) {
+                                        properties.put("hasType", true);
+                                    } else if (StringUtils.endsWithIgnoreCase(cProperty.getType(), "Integer") && StringUtils.startsWithIgnoreCase(cProperty.getColumn(), "is")) {
+                                        properties.put("hasLogical", true);
                                     }
                                 });
                                 properties.put("hideInListFields", cApi.getProperties().stream().filter(CProperty::isHideInList).map(CProperty::getField).collect(Collectors.toList()));
@@ -186,30 +204,87 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 }
                                 properties.put("normalFields", cApi.getProperties().stream().filter(cProperty -> !cProperty.isPrimary()).collect(Collectors.toList()));
                                 //
-                                doWriterTemplateFile(new File(path, String.format("repository/I%sRepository.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-interface-tmpl", properties);
-                                doWriterTemplateFile(new File(path, String.format("repository/impl/%sRepository.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-tmpl", properties);
-                                doWriterTemplateFile(new File(path, String.format("controller/%sController.java", StringUtils.capitalize(cApi.getName()))), "/crud/controller-tmpl", properties);
-                                if (test) {
-                                    doWriterTemplateFile(new File(testPath, String.format("repository/impl/%sRepositoryTest.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-test", properties);
-                                    doWriterTemplateFile(new File(testPath, String.format("controller/%sControllerTest.java", StringUtils.capitalize(cApi.getName()))), "/crud/controller-test", properties);
+                                if ((StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "ui"))) {
+                                    String mapping = cApi.getMapping().charAt(0) == '/' ? cApi.getMapping().substring(1) : cApi.getMapping();
+                                    String[] mappingParts = StringUtils.split(mapping, "/");
+                                    String viewFileName;
+                                    String viewFilePath = "";
+                                    String pagePath = "";
+                                    if (mappingParts.length == 1) {
+                                        viewFileName = mappingParts[0];
+                                    } else {
+                                        viewFileName = mappingParts[mappingParts.length - 1];
+                                        viewFilePath = StringUtils.join(mappingParts, '/', 0, mappingParts.length - 1);
+                                        pagePath = StringUtils.repeat("../", mappingParts.length - 1);
+                                    }
+                                    viewFilePath = (StringUtils.isBlank(viewFilePath) ? "" : viewFilePath + "/") + viewFileName;
+                                    //
+                                    Map<String, Object> viewProps = new HashMap<>();
+                                    viewProps.put("pagePath", pagePath);
+                                    viewProps.put("filename", viewFileName);
+                                    viewProps.put("filePath", viewFilePath);
+                                    viewProps.put("viewMethodName", EntityMeta.propertyNameToFieldName(viewFilePath.replace('/', '_')));
+                                    viewProps.put("mapping", mapping);
+                                    properties.put("viewProps", viewProps);
+                                    //
+                                    navMap.put(mapping, StringUtils.defaultIfBlank(cApi.getDescription(), cApi.getName()));
+                                    routeMap.put(mapping, viewProps);
+                                    //
+                                    doWriterTemplateFile(new File(viewPath, "WEB-INF/templates/" + viewFilePath + ".jsp"), "crud/view-crud-tmpl", properties);
                                 }
+                                //
+                                boolean enableQuery = false;
                                 if (cApi.getSettings() == null || cApi.getSettings().enableQuery) {
-                                    hasQuery = true;
-                                    doWriterTemplateFile(new File(path, String.format("dto/%sDTO.java", StringUtils.capitalize(cApi.getName()))), "/crud/dto-tmpl", properties);
-                                    doWriterTemplateFile(new File(path, String.format("vo/%sVO.java", StringUtils.capitalize(cApi.getName()))), "/crud/vo-tmpl", properties);
-                                    doWriterTemplateFile(new File(path, String.format("bean/%sBean.java", StringUtils.capitalize(cApi.getName()))), "/crud/bean-tmpl", properties);
+                                    hasQuery = enableQuery = true;
                                 }
-                                if (cApi.getSettings() == null || cApi.getSettings().enableCreate || cApi.getSettings().enableUpdate) {
-                                    doWriterTemplateFile(new File(path, String.format("dto/%sUpdateDTO.java", StringUtils.capitalize(cApi.getName()))), "/crud/dto-update-tmpl", properties);
-                                    doWriterTemplateFile(new File(path, String.format("bean/%sUpdateBean.java", StringUtils.capitalize(cApi.getName()))), "/crud/bean-update-tmpl", properties);
+                                boolean enableUpdate = cApi.getSettings() == null || cApi.getSettings().enableCreate || cApi.getSettings().enableUpdate;
+                                //
+                                if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
+                                    doWriterTemplateFile(new File(path, String.format("repository/I%sRepository.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-interface-tmpl", properties);
+                                    doWriterTemplateFile(new File(path, String.format("repository/impl/%sRepository.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-tmpl", properties);
+                                    if (enableQuery) {
+                                        doWriterTemplateFile(new File(path, String.format("vo/%sVO.java", StringUtils.capitalize(cApi.getName()))), "/crud/vo-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/%sBean.java", StringUtils.capitalize(cApi.getName()))), "/crud/bean-tmpl", properties);
+                                    }
+                                    if (enableUpdate) {
+                                        doWriterTemplateFile(new File(path, String.format("bean/%sUpdateBean.java", StringUtils.capitalize(cApi.getName()))), "/crud/bean-update-tmpl", properties);
+                                    }
+                                    if (test) {
+                                        doWriterTemplateFile(new File(testPath, String.format("repository/impl/%sRepositoryTest.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-test", properties);
+                                    }
+                                }
+                                if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
+                                    doWriterTemplateFile(new File(path, String.format("controller/%sController.java", StringUtils.capitalize(cApi.getName()))), "/crud/controller-tmpl", properties);
+                                    if (enableQuery) {
+                                        doWriterTemplateFile(new File(path, String.format("dto/%sDTO.java", StringUtils.capitalize(cApi.getName()))), "/crud/dto-tmpl", properties);
+                                    }
+                                    if (enableUpdate) {
+                                        doWriterTemplateFile(new File(path, String.format("dto/%sUpdateDTO.java", StringUtils.capitalize(cApi.getName()))), "/crud/dto-update-tmpl", properties);
+                                    }
+                                    if (test) {
+                                        doWriterTemplateFile(new File(testPath, String.format("controller/%sControllerTest.java", StringUtils.capitalize(cApi.getName()))), "/crud/controller-test", properties);
+                                    }
                                 }
                             }
-                            if (hasQuery) {
+                            if (hasQuery && (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller"))) {
                                 doWriterTemplateFile(new File(path, "dto/PageDTO.java"), "/crud/page-dto-tmpl", props);
                             }
+                            if ((StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "ui"))) {
+                                doWriterTemplateFile(new File(viewPath, "WEB-INF/templates/_base_crud.jsp"), useCdn ? "crud/view-base-crud-cdn-tmpl" : "crud/view-base-crud-tmpl", new HashMap<>());
+                                Map<String, Object> propsMap = new HashMap<>();
+                                propsMap.put("app", cApp);
+                                propsMap.put("navMap", navMap);
+                                propsMap.put("routeMap", routeMap);
+                                doWriterTemplateFile(new File(viewPath, "assets/commons/js/commons.js"), "crud/view-commons-js-tmpl", propsMap);
+                                doWriterTemplateFile(new File(path, "controller/ViewRouteController.java"), "crud/view-route-controller-tmpl", propsMap);
+                            }
                             if (test) {
-                                doWriterTemplateFile(new File(testPath, "RepositoryTests.java"), "/crud/repository-test-suite", props);
-                                doWriterTemplateFile(new File(testPath, "ControllerTests.java"), "/crud/controller-test-suite", props);
+                                if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
+                                    doWriterTemplateFile(new File(testPath, "RepositoryTests.java"), "/crud/repository-test-suite", props);
+                                }
+                                if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
+                                    doWriterTemplateFile(new File(testPath, "ControllerTests.java"), "/crud/controller-test-suite", props);
+                                }
                             }
                         }
                     }
@@ -228,7 +303,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
     private File defaultCfgFileIfNeed(File cfgFile) {
         if (cfgFile == null) {
-            cfgFile = new File(getBasedir(), StringUtils.defaultIfBlank(file, DEFAULT_CRUD_FILE));
+            cfgFile = new File(StringUtils.defaultIfBlank(file, DEFAULT_CRUD_FILE));
+            if (!cfgFile.exists()) {
+                cfgFile = new File(getBasedir(), cfgFile.getPath());
+            }
         }
         return cfgFile;
     }
@@ -274,7 +352,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 CApplication cApp = new CApplication()
                         .setName(getProjectName())
                         .setPackageName(getPackageName())
-                        .setAuthor("YMP (https://www.ymate.net/")
+                        .setAuthor("YMP (https://www.ymate.net/)")
                         .setVersion(getVersion())
                         .setCreateTime(DateTimeHelper.now().toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
                 //
@@ -449,8 +527,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))));
             if (!view) {
                 if (isStatus) {
-                    cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName(languageMap.get("enable")).setMethodName("enable").setDescription(languageMap.get("enable")).setMapping("/enable").setValue("0"),
-                            new CStatusConf().setEnabled(true).setName(languageMap.get("disable")).setMethodName("Disable").setDescription(languageMap.get("disable")).setMapping("/disable").setValue("1")));
+                    cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName(languageMap.get("enable")).setMethodName("statusEnable").setDescription(languageMap.get("enable")).setMapping("/status/enable").setValue("0"),
+                            new CStatusConf().setEnabled(true).setName(languageMap.get("disable")).setMethodName("statusDisable").setDescription(languageMap.get("disable")).setMapping("/status/disable").setValue("1")));
                 } else {
                     cConfig.setStatus(Collections.singletonList(new CStatusConf()));
                 }

@@ -52,6 +52,9 @@ public class DecryptMojo extends AbstractMojo {
             } else {
                 processor = new DefaultPasswordProcessor();
             }
+            if (StringUtils.isNotBlank(passkey)) {
+                processor.setPassKey(passkey);
+            }
             getLog().info(String.format("Use passkey: %s", processor.getPassKey()));
             getLog().info(String.format("Decrypt content: %s", processor.decrypt(content)));
         } catch (Exception e) {
