@@ -1,7 +1,7 @@
 # YMATE-MAVEN-PLUGIN
 
 [![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.maven.plugins/ymate-maven-plugin.svg)](https://search.maven.org/artifact/net.ymate.maven.plugins/ymate-maven-plugin)
-[![LICENSE](https://img.shields.io/github/license/suninformation/ymate-embed.svg)](https://gitee.com/suninformation/ymate-embed/blob/master/LICENSE)
+[![LICENSE](https://img.shields.io/github/license/suninformation/ymate-maven-plugin.svg)](https://gitee.com/suninformation/ymate-maven-plugin/blob/master/LICENSE)
 
 本项目为基于 [YMP - 轻量级 Java 应用开发框架](https://ymate.net/) 开发的小伙伴儿们提供的一系列 Maven 插件工具，辅助快速生成代码与服务等。
 
