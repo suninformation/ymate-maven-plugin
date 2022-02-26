@@ -1,6 +1,6 @@
 <#setting number_format="#">
 <#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>"${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if></#if></#macro>
-<#macro toSetId><#if primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(buildPrimaryKey())<#elseif multiPrimaryKey>.id(id)</#if></#macro>
+<#macro toSetId><#if multiPrimaryKey>.id(id)<#elseif primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(<#if primaryKey.config.createOrUpdate.enabled>${primaryKey.name}<#else>buildPrimaryKey()</#if>)</#if></#macro>
 <#macro buildFieldCond p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>.exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field false/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if><#else><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
                 .expr(queryBean.getStart${p.name?cap_first}() != null || queryBean.getEnd${p.name?cap_first}() != null, c -> c.rangeWrap(<@buildFieldName p.field false/>, queryBean.getStart${p.name?cap_first}(), queryBean.getEnd${p.name?cap_first}(), Cond.LogicalOpt.AND))<#else><#if p.field??>
                 .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field false/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#if></#macro>
@@ -69,13 +69,13 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if !(api.settings??) || api.settings.enableCreate!true>@Override
     @Transaction
-    public ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.type} ${primaryKey.name}, </#if> ${api.name?cap_first}UpdateBean updateBean) throws Exception {<#if multiPrimaryKey>
-        if (<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if> == null) {
+    public ${entityName} create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.type} ${primaryKey.name}, </#if>${api.name?cap_first}UpdateBean updateBean) throws Exception {<#if multiPrimaryKey || primaryKey.config.createOrUpdate.enabled>
+        if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")><#if multiPrimaryKey>id<#else>${primaryKey.name}</#if> == null<#else>StringUtils.isBlank(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>)</#if>) {
             throw new NullArgumentException("<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>");
         }</#if>
         if (updateBean != null) {<#if createTimeProp?? && !createTimeProp.foreign>
             Long now = System.currentTimeMillis();</#if>
-            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<#if !multiPrimaryKey && primaryKey?? && !primaryKey.config.createOrUpdate.enabled><@toSetId/><#elseif primaryKey??>.${primaryKey.name}(${primaryKey.name})</#if><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
+            ${entityName} entity = ${entityName}.builder(owner).dataSourceName(dataSourceName)<@toSetId/><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
                     .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if createTimeProp?? && !createTimeProp.foreign>
                     .${createTimeProp.name}(now)<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
                     .${lastModifyTimeProp.name}(now)</#if></#if>

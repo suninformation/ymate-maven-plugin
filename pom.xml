@@ -6,7 +6,7 @@
 
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-dev</version>
     <packaging>maven-plugin</packaging>
 
     <name>ymate-maven-plugin</name>

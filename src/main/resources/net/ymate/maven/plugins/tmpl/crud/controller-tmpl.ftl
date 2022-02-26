@@ -125,7 +125,8 @@ public class ${api.name?cap_first}Controller {
             return WebResult.builder().succeed();
         }
         return WebResult.builder(WebErrorCode.resourceNotFoundOrNotExist());
-    }<#list api.properties as p><#if !p.primary && p.config?? && p.config.status??><#list p.config.status as s><#if s.enabled>
+    }</#if>
+    <#if !(api.settings??) || api.settings.enableStatus!true><#list api.properties as p><#if !p.primary && p.config?? && p.config.status??><#list p.config.status as s><#if s.enabled>
 
     <#if apidocs>@ApiAction(value = "${s.name!""}", description = "${s.description!""}")</#if>
     @RequestMapping(value = "${s.mapping!""}", method = Type.HttpMethod.POST)

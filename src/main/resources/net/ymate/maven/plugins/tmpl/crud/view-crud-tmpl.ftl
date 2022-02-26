@@ -91,7 +91,7 @@
                 });</#if>
 
                 <#if !(api.settings??) || api.settings.enableCreate!true || api.settings.enableUpdate!true>var _validationRules = {
-                    <#if !multiPrimaryKey><#list primaryFields as p><@buildValidationRule p/></#list></#if>
+                    <#if multiPrimaryKey><#list primaryFields as p><@buildValidationRule p/></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled><@buildValidationRule primaryKey/></#if>
                     <#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled><@buildValidationRule p/></#if></#list>
                 };</#if>
 
@@ -175,7 +175,7 @@
                             });
                         }
                     } else {
-                        __notifyShow('请选择一条要操作的记录！', 'warning');
+                        __notifyShow().warn("请至少选择一条记录！");
                     }
                 }</#if></#if>
 
@@ -443,7 +443,7 @@
                                 _large="true"
                                 _scrollable="true">
                     <div class="messageShow" data-message-show="这里是默认提示信息。"></div>
-                    <#if multiPrimaryKey><#list primaryFields as p><@buildFormItem p false/></#list></#if>
+                    <#if multiPrimaryKey><#list primaryFields as p><@buildFormItem p false/></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled><@buildFormItem primaryKey false/></#if>
                     <#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled><@buildFormItem p false/></#if></#list>
                 </adminlte:modal></#if><#if !(api.settings??) || api.settings.enableUpdate!true>
                 <adminlte:modal _id="updateModal"
