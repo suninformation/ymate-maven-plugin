@@ -59,6 +59,7 @@ public class ModuleMojo extends AbstractMojo {
         try {
             File path = new File(String.format("%s/src/main/java", getBasedir()), getPackageName().replace(".", "/"));
             //
+            doWriterTemplateFile(new File(getBasedir(), "/misc/ymp-conf.properties"), "/module/module-config-file", properties);
             doWriterTemplateFile(new File(path, String.format("I%s.java", name)), "/module/module-interface", properties);
             doWriterTemplateFile(new File(path, String.format("%s.java", name)), "/module/module-class", properties);
             doWriterTemplateFile(new File(path, String.format("I%sConfig.java", name)), "/module/module-config", properties);
