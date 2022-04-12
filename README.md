@@ -11,7 +11,7 @@
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </plugin>
 ```
 

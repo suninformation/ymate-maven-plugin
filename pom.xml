@@ -6,7 +6,7 @@
 
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.1-dev</version>
+    <version>1.0.1</version>
     <packaging>maven-plugin</packaging>
 
     <name>ymate-maven-plugin</name>
@@ -15,7 +15,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ymate.platform.version>2.1.0</ymate.platform.version>
+        <ymate.platform.version>2.1.1</ymate.platform.version>
         <ymate.apidocs.version>2.0.0</ymate.apidocs.version>
     </properties>
 
@@ -206,6 +206,11 @@
         <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-core</artifactId>
+            <version>${ymate.platform.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.ymate.platform</groupId>
+            <artifactId>ymate-platform-webmvc</artifactId>
             <version>${ymate.platform.version}</version>
         </dependency>
         <dependency>
