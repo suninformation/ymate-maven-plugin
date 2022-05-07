@@ -109,7 +109,7 @@ public class ConfigurationMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            File baseDir = new File(getBasedir());
+            File baseDir = new File(homeDir);
             getLog().info(String.format("Base directory: %s", baseDir.getPath()));
             doMakeDirs(baseDir, true);
             doRepairLog4jFile(baseDir);
