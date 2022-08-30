@@ -19,6 +19,8 @@ import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import net.ymate.platform.commons.FreemarkerConfigBuilder;
+import net.ymate.platform.commons.IPasswordProcessor;
+import net.ymate.platform.commons.impl.DefaultPasswordProcessor;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
@@ -32,6 +34,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +104,7 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
         confFilePath = RuntimeUtils.replaceEnvVariable(confFilePath);
         File confFile = new File(confFilePath);
         if (confFile.isAbsolute() && confFile.exists() && confFile.isFile()) {
-            try (InputStream inputStream = new FileInputStream(confFile)) {
+            try (InputStream inputStream = Files.newInputStream(confFile.toPath())) {
                 properties.load(inputStream);
                 getLog().info(String.format("Found and load the config file: %s", confFile.getPath()));
                 return MapSafeConfigReader.bind(properties);
@@ -122,7 +125,7 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
 
     public void doWriterTemplateFile(String path, String fileName, String tmplFile, Map<String, Object> properties) throws IOException, TemplateException {
         File outputFile = new File(path, fileName);
-        doWriterTemplateFile(new FileOutputStream(outputFile), tmplFile, properties);
+        doWriterTemplateFile(Files.newOutputStream(outputFile.toPath()), tmplFile, properties);
         this.getLog().info("Output file: " + outputFile);
     }
 
@@ -160,6 +163,16 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
             urls.add(dependency.getFile().toURI().toURL());
         }
         return new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader());
+    }
+
+    public IPasswordProcessor loadPasswordProcessor(String implClass, ClassLoader classloader) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        IPasswordProcessor processor;
+        if (StringUtils.isNotBlank(implClass)) {
+            processor = (IPasswordProcessor) classloader.loadClass(implClass).newInstance();
+        } else {
+            processor = new DefaultPasswordProcessor();
+        }
+        return processor;
     }
 
     public String getTemplateRootPath() {

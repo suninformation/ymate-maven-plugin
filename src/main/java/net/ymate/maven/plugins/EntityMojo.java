@@ -38,6 +38,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -73,14 +74,15 @@ public class EntityMojo extends AbstractPersistenceMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try (IApplication application = new Application(buildApplicationConfigureFactory())) {
+        try (IApplication application = new Application(buildApplicationConfigureFactory());
+             URLClassLoader classloader = buildRuntimeClassLoader(mavenProject)) {
             application.initialize();
             //
             Scaffold.Builder builder = Scaffold.builder(application, false);
             builder.outputPath(ExpressionUtils.bind(builder.outputPath()).set(RuntimeUtils.ROOT, getBasedir()).getResult());
             String namedFilterClass = application.getParam(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS);
             if (StringUtils.isNotBlank(namedFilterClass)) {
-                builder.namedFilter((INamedFilter) buildRuntimeClassLoader(mavenProject).loadClass(namedFilterClass).newInstance());
+                builder.namedFilter((INamedFilter) classloader.loadClass(namedFilterClass).newInstance());
             }
             doCreateEntityClassFiles(application.getModuleManager().getModule(JDBC.class), builder.build(), view);
         } catch (Exception e) {

@@ -98,8 +98,13 @@ public class ApiDocsMojo extends AbstractMojo {
             beanLoader.setClassLoader(new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader()));
             beanLoader.registerPackageNames(Arrays.asList(packageNames));
             //
+            File outputDirFile = new File(outputDir);
+            if (!outputDirFile.isAbsolute()) {
+                outputDirFile = new File(mavenProject.getBasedir(), outputDir);
+            }
+            //
             getLog().info(String.format("packageNames: %s", beanLoader.getPackageNames()));
-            getLog().info(String.format("outputDir: %s", outputDir));
+            getLog().info(String.format("outputDir: %s", outputDirFile.getPath()));
             //
             IDocs docs = application.getModuleManager().getModule(Docs.class);
             if (!ArrayUtils.isEmpty(ignoredRequestMethods)) {
@@ -115,7 +120,7 @@ public class ApiDocsMojo extends AbstractMojo {
             if (docs.getDocInfoMap().isEmpty()) {
                 getLog().warn("No documents found.");
             } else {
-                File distDir = new File(outputDir, "docs/");
+                File distDir = new File(outputDirFile, "docs/");
                 switch (StringUtils.lowerCase(format)) {
                     case "html":
                     case "docusaurus":

@@ -16,13 +16,16 @@
 package net.ymate.maven.plugins;
 
 import net.ymate.platform.commons.IPasswordProcessor;
-import net.ymate.platform.commons.impl.DefaultPasswordProcessor;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+
+import java.net.URLClassLoader;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2016/12/17 05:52
@@ -45,13 +48,8 @@ public class DecryptMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try {
-            IPasswordProcessor processor;
-            if (StringUtils.isNotBlank(implClass)) {
-                processor = (IPasswordProcessor) buildRuntimeClassLoader(mavenProject).loadClass(implClass).newInstance();
-            } else {
-                processor = new DefaultPasswordProcessor();
-            }
+        try (URLClassLoader classloader = buildRuntimeClassLoader(mavenProject)) {
+            IPasswordProcessor processor = loadPasswordProcessor(implClass, classloader);
             if (StringUtils.isNotBlank(passkey)) {
                 processor.setPassKey(passkey);
             }

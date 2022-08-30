@@ -22,11 +22,11 @@ import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;
 import net.ymate.platform.commons.DateTimeHelper;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.Application;
 import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConfig;
 import net.ymate.platform.persistence.jdbc.JDBC;
@@ -46,9 +46,13 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -148,7 +152,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 } else if (simple) {
                     buildCrudSimple(cfgFile);
                 } else {
-                    InputStream inputStream = new FileInputStream(cfgFile);
+                    InputStream inputStream = Files.newInputStream(cfgFile.toPath());
                     CApplication cApp = JsonWrapper.deserialize(IOUtils.toByteArray(inputStream), CApplication.class);
                     if (cApp != null) {
                         if (cApp.isLocked()) {
@@ -223,7 +227,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     viewProps.put("pagePath", pagePath);
                                     viewProps.put("filename", viewFileName);
                                     viewProps.put("filePath", viewFilePath);
-                                    viewProps.put("viewMethodName", EntityMeta.propertyNameToFieldName(viewFilePath.replace('/', '_')));
+                                    viewProps.put("viewMethodName", ClassUtils.propertyNameToFieldName(viewFilePath.replace('/', '_')));
                                     viewProps.put("mapping", mapping);
                                     properties.put("viewProps", viewProps);
                                     //
@@ -304,9 +308,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
     private File defaultCfgFileIfNeed(File cfgFile) {
         if (cfgFile == null) {
             cfgFile = new File(StringUtils.defaultIfBlank(file, DEFAULT_CRUD_FILE));
-            if (!cfgFile.exists()) {
-                cfgFile = new File(getBasedir(), cfgFile.getPath());
-            }
+        }
+        if (!cfgFile.isAbsolute()) {
+            cfgFile = new File(getBasedir(), cfgFile.getPath());
         }
         return cfgFile;
     }
@@ -330,7 +334,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
         String content = JsonWrapper.toJsonString(cApplication, true, true);
         File parentFile = cfgFile.getParentFile();
         if (parentFile.exists() || parentFile.mkdirs()) {
-            IOUtils.write(content, new FileOutputStream(cfgFile), StandardCharsets.UTF_8);
+            IOUtils.write(content, Files.newOutputStream(cfgFile.toPath()), StandardCharsets.UTF_8);
             getLog().info("Output file: " + cfgFile);
         }
     }
@@ -338,13 +342,14 @@ public class CrudMojo extends AbstractPersistenceMojo {
     private void buildCrudFromDb(File cfgFile) throws Exception {
         cfgFile = defaultCfgFileIfNeed(cfgFile);
         if (checkCfgFile(cfgFile)) {
-            try (IApplication application = new Application(buildApplicationConfigureFactory())) {
+            try (IApplication application = new Application(buildApplicationConfigureFactory());
+                 URLClassLoader classLoader = buildRuntimeClassLoader(mavenProject)) {
                 application.initialize();
                 //
                 Scaffold.Builder builder = Scaffold.builder(application, false);
                 String namedFilterClass = application.getParam(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS);
                 if (StringUtils.isNotBlank(namedFilterClass)) {
-                    builder.namedFilter((INamedFilter) buildRuntimeClassLoader(mavenProject).loadClass(namedFilterClass).newInstance());
+                    builder.namedFilter((INamedFilter) classLoader.loadClass(namedFilterClass).newInstance());
                 }
                 Scaffold scaffold = builder.build();
                 IDatabase owner = application.getModuleManager().getModule(JDBC.class);
@@ -451,7 +456,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
         cApi.setEntityClass(String.format("%s.%s.%s", scaffold.getPackageName(), StringUtils.lowerCase(scaffold.getClassSuffix()), entityName));
         cApi.setName(entityInfo.getName());
         cApi.setDescription(entityInfo.getTableComment());
-        cApi.setMapping("/" + EntityMeta.fieldNameToPropertyName(entityInfo.getTableName(), 0).replace('_', '/'));
+        cApi.setMapping("/" + ClassUtils.fieldNameToPropertyName(entityInfo.getTableName(), 0).replace('_', '/'));
         cApi.setQuery(new CQuery()
                         .setFroms(Collections.singletonList(new CFrom().setValue(String.format("%s.TABLE_NAME", entityName)).setType(QFrom.Type.TABLE)))
                         .setJoins(Collections.singletonList(new CJoin()
