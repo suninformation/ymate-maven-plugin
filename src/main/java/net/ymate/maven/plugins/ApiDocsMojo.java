@@ -18,9 +18,9 @@ package net.ymate.maven.plugins;
 import net.ymate.apidocs.Docs;
 import net.ymate.apidocs.IDocs;
 import net.ymate.apidocs.annotation.Api;
+import net.ymate.maven.plugins.support.DefaultApplicationCreator;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
 import org.apache.commons.lang3.ArrayUtils;
@@ -85,7 +85,9 @@ public class ApiDocsMojo extends AbstractMojo {
     @Override
     @SuppressWarnings("unchecked")
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try (IApplication application = YMP.run()) {
+        try (IApplication application = new DefaultApplicationCreator().create(null, null)) {
+            application.initialize();
+            //
             if (StringUtils.isNotBlank(language)) {
                 application.getI18n().current(LocaleUtils.toLocale(language));
             }
