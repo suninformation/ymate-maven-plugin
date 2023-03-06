@@ -154,7 +154,7 @@
                             __confirmShow({
                                 ok: function () {
                                     $.requestSender({
-                                        url: __commons.processBasePath(_pagePath, '${viewProps.mapping}/status/' + status),
+                                        url: __commons.processBasePath(_pagePath, '${viewProps.mapping}/' + status),
                                         type: 'POST',
                                         timeout: 0,
                                         data: {<#if multiPrimaryKey><#list primaryFields as p>

@@ -208,7 +208,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 }
                                 properties.put("normalFields", cApi.getProperties().stream().filter(cProperty -> !cProperty.isPrimary()).collect(Collectors.toList()));
                                 //
-                                if ((StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "ui"))) {
+                                if (StringUtils.equalsIgnoreCase(action, "ui")) {
                                     String mapping = cApi.getMapping().charAt(0) == '/' ? cApi.getMapping().substring(1) : cApi.getMapping();
                                     String[] mappingParts = StringUtils.split(mapping, "/");
                                     String viewFileName;
@@ -271,9 +271,12 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 }
                             }
                             if (hasQuery && (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller"))) {
-                                doWriterTemplateFile(new File(path, "dto/PageDTO.java"), "/crud/page-dto-tmpl", props);
+                                File targetFile = new File(path, "dto/PageDTO.java");
+                                if (!targetFile.exists()) {
+                                    doWriterTemplateFile(targetFile, "/crud/page-dto-tmpl", props);
+                                }
                             }
-                            if ((StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "ui"))) {
+                            if (StringUtils.equalsIgnoreCase(action, "ui")) {
                                 doWriterTemplateFile(new File(viewPath, "WEB-INF/templates/_base_crud.jsp"), useCdn ? "crud/view-base-crud-cdn-tmpl" : "crud/view-base-crud-tmpl", new HashMap<>());
                                 Map<String, Object> propsMap = new HashMap<>();
                                 propsMap.put("app", cApp);
