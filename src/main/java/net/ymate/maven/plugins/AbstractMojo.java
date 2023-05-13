@@ -103,7 +103,10 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
         Properties properties = new Properties();
         confFilePath = RuntimeUtils.replaceEnvVariable(confFilePath);
         File confFile = new File(confFilePath);
-        if (confFile.isAbsolute() && confFile.exists() && confFile.isFile()) {
+        if (!confFile.isAbsolute()) {
+            confFile = new File(basedir, confFilePath);
+        }
+        if (confFile.exists() && confFile.isFile()) {
             try (InputStream inputStream = Files.newInputStream(confFile.toPath())) {
                 properties.load(inputStream);
                 getLog().info(String.format("Found and load the config file: %s", confFile.getPath()));

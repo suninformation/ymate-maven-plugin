@@ -96,8 +96,10 @@ public class ApiDocsMojo extends AbstractMojo {
             for (Artifact dependency : mavenProject.getArtifacts()) {
                 urls.add(dependency.getFile().toURI().toURL());
             }
+            ClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader());
+            Thread.currentThread().setContextClassLoader(classLoader);
             IBeanLoader beanLoader = new DefaultBeanLoader();
-            beanLoader.setClassLoader(new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader()));
+            beanLoader.setClassLoader(classLoader);
             beanLoader.registerPackageNames(Arrays.asList(packageNames));
             //
             File outputDirFile = new File(outputDir);

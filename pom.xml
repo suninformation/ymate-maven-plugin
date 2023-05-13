@@ -16,7 +16,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ymate.platform.version>2.1.2-dev</ymate.platform.version>
-        <ymate.apidocs.version>2.0.0</ymate.apidocs.version>
+        <ymate.apidocs.version>2.0.1-dev</ymate.apidocs.version>
     </properties>
 
     <developers>
@@ -172,9 +172,9 @@
             <version>${ymate.platform.version}</version>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.30</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.32</version>
         </dependency>
         <!--
         <dependency>
