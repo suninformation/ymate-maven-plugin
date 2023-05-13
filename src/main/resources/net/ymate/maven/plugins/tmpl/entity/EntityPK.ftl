@@ -35,10 +35,10 @@ public class ${entityInfo.name?cap_first}PK implements IEntityPK {
 
 <#list entityInfo.primaryKeys as field>
     <#if (field.columnName!"undefined") != "undefined">
-    @Property(name = ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.columnName?upper_case}<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
+    @Property(name = ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.constVarName?upper_case}<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
     @Default("${field.defaultValue}")</#if><#if (field.remarks!"undefined") != "undefined">
     @Comment("${field.remarks}")</#if><#if (config.useStateSupport)>
-    @PropertyState(propertyName = ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.columnName?upper_case})</#if><#if (field.readonly)>
+    @PropertyState(propertyName = ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.constVarName?upper_case})</#if><#if (field.readonly)>
     @Readonly</#if></#if>
     private ${field.varType} ${field.varName};
 

@@ -45,7 +45,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
 
 <#list entityInfo.fields as field>
     <#if entityInfo.primaryKeyName == field.varName>@Id</#if><#if (field.columnName!"undefined") != "undefined">
-    @Property(name = FIELDS.${field.columnName?upper_case})<#if (field.remarks!"undefined") != "undefined">
+    @Property(name = FIELDS.${field.constVarName?upper_case})<#if (field.remarks!"undefined") != "undefined">
     @Comment("${field.remarks}")</#if></#if>
     private ${field.varType} ${field.varName};
 
@@ -235,7 +235,7 @@ public class ${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.c
         <#list entityInfo.fields as field>
 
         public FieldCondition ${field.varName}() {
-            return createFieldCondition(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.columnName?upper_case});
+            return createFieldCondition(${entityInfo.name?cap_first}<#if (config.useClassSuffix)>${config.classSuffix?cap_first}</#if>.FIELDS.${field.constVarName?upper_case});
         }
         </#list>
     }</#if>
