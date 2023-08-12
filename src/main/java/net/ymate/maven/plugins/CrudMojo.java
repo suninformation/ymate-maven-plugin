@@ -89,6 +89,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
     @Parameter(property = "test")
     private boolean test;
 
+    @Parameter(property = "prefix")
+    private String prefix;
+
     /**
      * 自定义语言
      */
@@ -116,9 +119,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 languageMap.put("disable", "禁用");
                 languageMap.put("notes", "注意：若省略条件参数调用导出接口将返回全部数据，存在安全隐患！");
                 languageMap.put("page", "页号");
-                languageMap.put("page_description", "取值范围：>=1");
+                languageMap.put("page_description", "取值范围：大于0的整数");
                 languageMap.put("pageSize", "每页记录数");
-                languageMap.put("pageSize_description", "取值范围：>=20 且 <=200");
+                languageMap.put("pageSize_description", "取值范围：20-200");
             } else {
                 languageMap.put("query", "Query");
                 languageMap.put("detail", "Detail");
@@ -131,9 +134,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 languageMap.put("disable", "Disable");
                 languageMap.put("notes", "Warning: calling export interface will return all data if omitting condition parameter, which is very dangerous!");
                 languageMap.put("page", "Page number");
-                languageMap.put("page_description", "Value range: >= 1");
+                languageMap.put("page_description", "Value range: An integer greater than 0");
                 languageMap.put("pageSize", "Records per page");
-                languageMap.put("pageSize_description", "Value range: >=20 and <=200");
+                languageMap.put("pageSize_description", "Value range: 20-200");
             }
             boolean useCdn = false;
             if (StringUtils.equalsIgnoreCase(action, "ui-cdn")) {
@@ -165,9 +168,11 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             Map<String, Object> navMap = new HashMap<>();
                             Map<String, Object> routeMap = new HashMap<>();
                             //
+                            prefix = StringUtils.trimToEmpty(StringUtils.capitalize(prefix));
                             Map<String, Object> props = new HashMap<>();
                             props.put("app", cApp);
                             props.put("apidocs", apidocs);
+                            props.put("prefix", prefix);
                             //
                             props.put("languageMap", languageMap);
                             //
@@ -178,6 +183,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     getLog().info("API '" + cApi.getName() + "' has been locked.");
                                     continue;
                                 }
+                                cApi.setName(processNamePrefix(cApi.getName()));
+                                //
                                 Map<String, Object> properties = new HashMap<>(props);
                                 properties.put("api", cApi);
                                 properties.put("entityName", StringUtils.substringAfterLast(cApi.getEntityClass(), "."));
@@ -243,30 +250,34 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 }
                                 boolean enableUpdate = cApi.getSettings() == null || cApi.getSettings().enableCreate || cApi.getSettings().enableUpdate;
                                 //
+                                String apiFullName = String.format("%s%s", prefix, StringUtils.capitalize(cApi.getName()));
                                 if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
-                                    doWriterTemplateFile(new File(path, String.format("repository/I%sRepository.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-interface-tmpl", properties);
-                                    doWriterTemplateFile(new File(path, String.format("repository/impl/%sRepository.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-tmpl", properties);
+                                    doWriterTemplateFile(new File(path, String.format("repository/I%sRepository.java", apiFullName)), "/crud/repository-interface-tmpl", properties);
+                                    doWriterTemplateFile(new File(path, String.format("repository/impl/%sRepository.java", apiFullName)), "/crud/repository-tmpl", properties);
                                     if (enableQuery) {
-                                        doWriterTemplateFile(new File(path, String.format("vo/%sVO.java", StringUtils.capitalize(cApi.getName()))), "/crud/vo-tmpl", properties);
-                                        doWriterTemplateFile(new File(path, String.format("bean/%sBean.java", StringUtils.capitalize(cApi.getName()))), "/crud/bean-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("vo/I%sVO.java", apiFullName)), "/crud/vo-interface-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("vo/%sVO.java", apiFullName)), "/crud/vo-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/I%sBean.java", apiFullName)), "/crud/bean-interface-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/%sBean.java", apiFullName)), "/crud/bean-tmpl", properties);
                                     }
                                     if (enableUpdate) {
-                                        doWriterTemplateFile(new File(path, String.format("bean/%sUpdateBean.java", StringUtils.capitalize(cApi.getName()))), "/crud/bean-update-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/I%sUpdateBean.java", apiFullName)), "/crud/bean-update-interface-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/%sUpdateBean.java", apiFullName)), "/crud/bean-update-tmpl", properties);
                                     }
                                     if (test) {
-                                        doWriterTemplateFile(new File(testPath, String.format("repository/impl/%sRepositoryTest.java", StringUtils.capitalize(cApi.getName()))), "/crud/repository-test", properties);
+                                        doWriterTemplateFile(new File(testPath, String.format("repository/impl/%sRepositoryTest.java", apiFullName)), "/crud/repository-test", properties);
                                     }
                                 }
                                 if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
-                                    doWriterTemplateFile(new File(path, String.format("controller/%sController.java", StringUtils.capitalize(cApi.getName()))), "/crud/controller-tmpl", properties);
+                                    doWriterTemplateFile(new File(path, String.format("controller/%sController.java", apiFullName)), "/crud/controller-tmpl", properties);
                                     if (enableQuery) {
-                                        doWriterTemplateFile(new File(path, String.format("dto/%sDTO.java", StringUtils.capitalize(cApi.getName()))), "/crud/dto-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("dto/%sDTO.java", apiFullName)), "/crud/dto-tmpl", properties);
                                     }
                                     if (enableUpdate) {
-                                        doWriterTemplateFile(new File(path, String.format("dto/%sUpdateDTO.java", StringUtils.capitalize(cApi.getName()))), "/crud/dto-update-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("dto/%sUpdateDTO.java", apiFullName)), "/crud/dto-update-tmpl", properties);
                                     }
                                     if (test) {
-                                        doWriterTemplateFile(new File(testPath, String.format("controller/%sControllerTest.java", StringUtils.capitalize(cApi.getName()))), "/crud/controller-test", properties);
+                                        doWriterTemplateFile(new File(testPath, String.format("controller/%sControllerTest.java", apiFullName)), "/crud/controller-test", properties);
                                     }
                                 }
                             }
@@ -450,6 +461,13 @@ public class CrudMojo extends AbstractPersistenceMojo {
         }
     }
 
+    private String processNamePrefix(String name) {
+        if (StringUtils.isNoneBlank(prefix) && StringUtils.startsWithIgnoreCase(name, prefix)) {
+            return StringUtils.substring(name, prefix.length());
+        }
+        return name;
+    }
+
     private CApi buildApi(Scaffold scaffold, TableInfo tableInfo, boolean view) {
         EntityInfo entityInfo = scaffold.buildEntityInfo(tableInfo);
         //
@@ -457,7 +475,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
         cApi.setView(view);
         String entityName = String.format("%s%s", entityInfo.getName(), scaffold.isUseClassSuffix() ? StringUtils.capitalize(scaffold.getClassSuffix()) : StringUtils.EMPTY);
         cApi.setEntityClass(String.format("%s.%s.%s", scaffold.getPackageName(), StringUtils.lowerCase(scaffold.getClassSuffix()), entityName));
-        cApi.setName(entityInfo.getName());
+        cApi.setName(processNamePrefix(entityInfo.getName()));
         cApi.setDescription(entityInfo.getTableComment());
         cApi.setMapping("/" + ClassUtils.fieldNameToPropertyName(entityInfo.getTableName(), 0).replace('_', '/'));
         cApi.setQuery(new CQuery()

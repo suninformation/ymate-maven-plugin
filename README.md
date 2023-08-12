@@ -11,7 +11,7 @@
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-dev</version>
 </plugin>
 ```
 
@@ -109,6 +109,7 @@ CRUD 代码生成器。
 |simple|否| 是否生成规则配置文件样例，默认值：`false`                                           |
 |apidocs|否| 是否使用 API 文档注解，默认值：`false`                                          |
 |test|否| 是否生成单元测试代码，默认值：`false`                                             |
+|prefix|否| 指定类名称前缀，默认值：空 |
 |language|否| 自定义语言，默认值：空，系统语言环境                                                 |
 
 #### 命令示例
