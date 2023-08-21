@@ -96,21 +96,21 @@ mvn ymate:configuration -DprojectName=default -DmoduleNames=webapp,demo -Drepair
 
 CRUD 代码生成器。
 
-通过规则配置文件自动生成控制器（Controller）、存储器（Repository）和页面视图（UI）等相关代码。
+通过规则配置文件自动生成控制器（Controller）、存储器（Repository）、页面视图（UI）和JSP标签（TagLib）等相关代码。
 
 #### 参数列表
 
-|参数名称|必须| 说明                                                                 |
-|---|---|--------------------------------------------------------------------|
-|file|否| 规则配置文件，默认值：`misc/crud.json`                                        |
-|action|否| 指定本次生成哪些代码，默认为控制器和存储器，取值范围：`controller`、`repository`、`ui`、`ui-cdn` |
-|filter|否| 指定本次仅生成列表中API或表的代码，默认值：空，多个名称之间用 `,` 分隔                            |
-|fromDb|否| 是否通过数据库表结构生成规则配置文件，默认值：`false`                                     |
-|simple|否| 是否生成规则配置文件样例，默认值：`false`                                           |
-|apidocs|否| 是否使用 API 文档注解，默认值：`false`                                          |
-|test|否| 是否生成单元测试代码，默认值：`false`                                             |
-|prefix|否| 指定类名称前缀，默认值：空 |
-|language|否| 自定义语言，默认值：空，系统语言环境                                                 |
+|参数名称|必须| 说明                                                                          |
+|---|---|-----------------------------------------------------------------------------|
+|file|否| 规则配置文件，默认值：`misc/crud.json`                                                 |
+|action|否| 指定本次生成哪些代码，默认为控制器和存储器，取值范围：`controller`、`repository`、`ui`、`ui-cdn`、`taglib` |
+|filter|否| 指定本次仅生成列表中API或表的代码，默认值：空，多个名称之间用 `,` 分隔                                     |
+|fromDb|否| 是否通过数据库表结构生成规则配置文件，默认值：`false`                                              |
+|simple|否| 是否生成规则配置文件样例，默认值：`false`                                                    |
+|apidocs|否| 是否使用 API 文档注解，默认值：`false`                                                   |
+|test|否| 是否生成单元测试代码，默认值：`false`                                                      |
+|prefix|否| 指定类名称前缀，默认值：空                                                               |
+|language|否| 自定义语言，默认值：空，系统语言环境                                                          |
 
 #### 命令示例
 

@@ -46,6 +46,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -177,6 +178,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             props.put("languageMap", languageMap);
                             //
                             boolean hasQuery = false;
+                            List<String> tags = new ArrayList<>();
                             //
                             for (CApi cApi : cApp.getApis()) {
                                 if (cApi.isLocked()) {
@@ -268,6 +270,12 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                         doWriterTemplateFile(new File(testPath, String.format("repository/impl/%sRepositoryTest.java", apiFullName)), "/crud/repository-test", properties);
                                     }
                                 }
+                                if (StringUtils.equalsIgnoreCase(action, "taglib")) {
+                                    doWriterTemplateFile(new File(path, String.format("taglib/%sTag.java", apiFullName)), "crud/taglib-tmpl", properties);
+                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                    doWriterTemplateFile(outputStream, "crud/taglib-tld-tag-tmpl", properties);
+                                    tags.add(outputStream.toString());
+                                }
                                 if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
                                     doWriterTemplateFile(new File(path, String.format("controller/%sController.java", apiFullName)), "/crud/controller-tmpl", properties);
                                     if (enableQuery) {
@@ -286,6 +294,12 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 if (!targetFile.exists()) {
                                     doWriterTemplateFile(targetFile, "/crud/page-dto-tmpl", props);
                                 }
+                            }
+                            if (StringUtils.equalsIgnoreCase(action, "taglib")) {
+                                Map<String, Object> properties = new HashMap<>();
+                                properties.put("app", cApp);
+                                properties.put("tags", tags);
+                                doWriterTemplateFile(new File(getBasedir(), String.format("src/main/resources/META-INF/%s.tld", cApp.getName())), "crud/taglib-tld-tmpl", properties);
                             }
                             if (StringUtils.equalsIgnoreCase(action, "ui")) {
                                 doWriterTemplateFile(new File(viewPath, "WEB-INF/templates/_base_crud.jsp"), useCdn ? "crud/view-base-crud-cdn-tmpl" : "crud/view-base-crud-tmpl", new HashMap<>());
