@@ -106,10 +106,10 @@ public class ${prefix}${api.name?cap_first}Controller {
 
                          </#if></#list>,
 
-                         <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled><@parseField primaryKey false/>,
+                         <#elseif primaryKey?? && primaryKey.config?? && (primaryKey.config.create?? && primaryKey.config.create.enabled || primaryKey.config.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled)><@parseField primaryKey false/>,
 
-                         </#if><#if apidocs>@ApiParam </#if>@VModel @ModelBind ${prefix}${api.name?cap_first}UpdateDTO ${api.name?uncap_first}Update) throws Exception {
-        ErrorCode result = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>${prefix}${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>), <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.name}, </#if>${api.name?uncap_first}Update.toBean());
+                         </#if><#if apidocs>@ApiParam </#if>@VModel @ModelBind ${prefix}${api.name?cap_first}CreateDTO ${api.name?uncap_first}Create) throws Exception {
+        ErrorCode result = repository.create${api.name?cap_first}(database, <#if multiPrimaryKey>${prefix}${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>), <#elseif primaryKey?? && primaryKey.config?? && (primaryKey.config.create?? && primaryKey.config.create.enabled || primaryKey.config.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled)>${primaryKey.name}, </#if>${api.name?uncap_first}Create.toBean());
         if (result != null) {
             return WebResult.builder(result);
         }

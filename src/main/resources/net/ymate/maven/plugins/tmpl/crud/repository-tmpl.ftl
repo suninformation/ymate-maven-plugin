@@ -1,6 +1,6 @@
 <#setting number_format="#">
 <#macro buildFieldName field withoutPrefix><#if withoutPrefix || (field.prefix!"")?length == 0><#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if><#else>"${field.prefix!""}", <#if (field.value!"")?contains(".")>${field.value!""}<#else>"${field.value!""}"</#if></#if></#macro>
-<#macro toSetId><#if multiPrimaryKey>.id(id)<#elseif primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(<#if primaryKey.config.createOrUpdate.enabled>${primaryKey.name}<#else>buildPrimaryKey()</#if>)</#if></#macro>
+<#macro toSetId><#if multiPrimaryKey>.id(id)<#elseif primaryKey?? && !primaryKey.autoIncrement>.${primaryKey.name!"id"}(<#if primaryKey.config?? && (primaryKey.config.create?? && primaryKey.config.create.enabled || primaryKey.config.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled)>${primaryKey.name}<#else>buildPrimaryKey()</#if>)</#if></#macro>
 <#macro buildFieldCond p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.like><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled><#else><#if p.field??>.exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().likeWrap(<@buildFieldName p.field false/>).param(Like.create(queryBean.get${p.name?cap_first}()).contains()))</#if></#if><#else><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
                 .expr(queryBean.get${p.name?cap_first}() != null && (!queryBean.get${p.name?cap_first}().isNullStartDate() || !queryBean.get${p.name?cap_first}().isNullEndDate()), c -> c.rangeWrap(<@buildFieldName p.field false/>, queryBean.get${p.name?cap_first}().getStartDateTimeMillisOrNull(), queryBean.get${p.name?cap_first}().getEndDateTimeMillisOrNull(), Cond.LogicalOpt.AND))<#else><#if p.field??>
                 .exprNotEmpty(queryBean.get${p.name?cap_first}(), c -> c.and().eqWrap(<@buildFieldName p.field false/>).param(queryBean.get${p.name?cap_first}()))</#if></#if></#if></#if></#macro>
@@ -23,6 +23,7 @@ package ${app.packageName}.repository.impl;
 
 <#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 import ${app.packageName}.bean.I${prefix}${api.name?cap_first}Bean;<#if !api.view>
+import ${app.packageName}.bean.I${prefix}${api.name?cap_first}CreateBean;
 import ${app.packageName}.bean.I${prefix}${api.name?cap_first}UpdateBean;<#if multiPrimaryKey>
 import ${entityPackageName}.${prefix}${api.name?cap_first}PK;<#else>
 import net.ymate.platform.commons.util.UUIDUtils;</#if></#if>
@@ -78,15 +79,15 @@ public class ${prefix}${api.name?cap_first}Repository implements I${prefix}${api
 
     <#if !(api.settings??) || api.settings.enableCreate!true>@Override
     @Transaction
-    public ErrorCode create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.type} ${primaryKey.name}, </#if>I${prefix}${api.name?cap_first}UpdateBean updateBean) throws Exception {<#if multiPrimaryKey || primaryKey.config.createOrUpdate.enabled>
+    public ErrorCode create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.create.enabled>${primaryKey.type} ${primaryKey.name}, </#if>I${prefix}${api.name?cap_first}CreateBean createBean) throws Exception {<#if multiPrimaryKey || primaryKey.config.create.enabled>
         if (<#if multiPrimaryKey || !primaryKey.type?ends_with("String")><#if multiPrimaryKey>id<#else>${primaryKey.name}</#if> == null<#else>StringUtils.isBlank(<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>)</#if>) {
             throw new NullArgumentException("<#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>");
         }</#if>
         ErrorCode errorCode = null;
-        if (updateBean != null) {<#if createTimeProp?? && !createTimeProp.foreign>
+        if (createBean != null) {<#if createTimeProp?? && !createTimeProp.foreign>
             Long now = System.currentTimeMillis();</#if>
-            ${entityName}.Builder builder = ${entityName}.builder(owner).dataSourceName(dataSourceName)<@toSetId/><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
-                    .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list><#if createTimeProp?? && !createTimeProp.foreign>
+            ${entityName}.Builder builder = ${entityName}.builder(owner).dataSourceName(dataSourceName)<@toSetId/><#list normalFields as p><#if p.config?? && p.config.create?? && p.config.create.enabled>
+                    .${p.name}(createBean.get${p.name?cap_first}())</#if></#list><#if createTimeProp?? && !createTimeProp.foreign>
                     .${createTimeProp.name}(now)<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
                     .${lastModifyTimeProp.name}(now)</#if></#if>;
             try {
@@ -117,7 +118,7 @@ public class ${prefix}${api.name?cap_first}Repository implements I${prefix}${api
                 DataVersionMismatchException.comparisonVersion(entity.get${lastModifyTimeProp.name?cap_first}(), ${lastModifyTimeProp.name});
                 //</#if>
                 EntityStateWrapper<${entityName}> stateWrapper = entity.stateWrapper(false);
-                ${entityName}.Builder builder = stateWrapper.getEntity().bind()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
+                ${entityName}.Builder builder = stateWrapper.getEntity().bind()<#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled>
                         .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list>;
                 errorCode = doCheck(owner, dataSourceName, builder);
                 if (errorCode == null) {

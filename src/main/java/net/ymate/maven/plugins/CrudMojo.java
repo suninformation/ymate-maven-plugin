@@ -15,11 +15,13 @@
  */
 package net.ymate.maven.plugins;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import net.ymate.platform.commons.DateTimeHelper;
 import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.util.ClassUtils;
@@ -104,6 +106,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
+            JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
+            //
             Locale locale = LocaleUtils.toLocale(language);
             if (locale == null) {
                 locale = Locale.getDefault();
@@ -250,7 +254,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                 if (cApi.getSettings() == null || cApi.getSettings().enableQuery) {
                                     hasQuery = enableQuery = true;
                                 }
-                                boolean enableUpdate = cApi.getSettings() == null || cApi.getSettings().enableCreate || cApi.getSettings().enableUpdate;
+                                boolean enableCreate = cApi.getSettings() == null || cApi.getSettings().enableCreate;
+                                boolean enableUpdate = cApi.getSettings() == null || cApi.getSettings().enableUpdate;
                                 //
                                 String apiFullName = String.format("%s%s", prefix, StringUtils.capitalize(cApi.getName()));
                                 if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
@@ -261,6 +266,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                         doWriterTemplateFile(new File(path, String.format("vo/%sVO.java", apiFullName)), "/crud/vo-tmpl", properties);
                                         doWriterTemplateFile(new File(path, String.format("bean/I%sBean.java", apiFullName)), "/crud/bean-interface-tmpl", properties);
                                         doWriterTemplateFile(new File(path, String.format("bean/%sBean.java", apiFullName)), "/crud/bean-tmpl", properties);
+                                    }
+                                    if (enableCreate) {
+                                        doWriterTemplateFile(new File(path, String.format("bean/I%sCreateBean.java", apiFullName)), "/crud/bean-create-interface-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/%sCreateBean.java", apiFullName)), "/crud/bean-create-tmpl", properties);
                                     }
                                     if (enableUpdate) {
                                         doWriterTemplateFile(new File(path, String.format("bean/I%sUpdateBean.java", apiFullName)), "/crud/bean-update-interface-tmpl", properties);
@@ -280,6 +289,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     doWriterTemplateFile(new File(path, String.format("controller/%sController.java", apiFullName)), "/crud/controller-tmpl", properties);
                                     if (enableQuery) {
                                         doWriterTemplateFile(new File(path, String.format("dto/%sDTO.java", apiFullName)), "/crud/dto-tmpl", properties);
+                                    }
+                                    if (enableCreate) {
+                                        doWriterTemplateFile(new File(path, String.format("dto/%sCreateDTO.java", apiFullName)), "/crud/dto-create-tmpl", properties);
                                     }
                                     if (enableUpdate) {
                                         doWriterTemplateFile(new File(path, String.format("dto/%sUpdateDTO.java", apiFullName)), "/crud/dto-update-tmpl", properties);
@@ -424,6 +436,16 @@ public class CrudMojo extends AbstractPersistenceMojo {
                     .setCreateTime(DateTimeHelper.now().toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
             //
             CApi cApi = new CApi();
+            CCreateOrUpdateConf cCreateOrUpdateConf = new CCreateOrUpdateConf()
+                    .setValidation(new CValidation()
+                            .setDateTime(new CVDateTime())
+                            .setDataRange(new CVDataRange())
+                            .setEmail(new CVEmail())
+                            .setIdCard(new CVIdCard())
+                            .setLength(new CVLength())
+                            .setMobile(new CVMobile())
+                            .setNumeric(new CVNumeric())
+                            .setRegex(new CVRegex()));
             CProperty cProperty = new CProperty()
                     .setField(new CField())
                     .setConfig(new CConfig()
@@ -437,16 +459,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setMobile(new CVMobile())
                                     .setNumeric(new CVNumeric())
                                     .setRegex(new CVRegex())))
-                            .setCreateOrUpdate(new CCreateOrUpdateConf()
-                                    .setValidation(new CValidation()
-                                            .setDateTime(new CVDateTime())
-                                            .setDataRange(new CVDataRange())
-                                            .setEmail(new CVEmail())
-                                            .setIdCard(new CVIdCard())
-                                            .setLength(new CVLength())
-                                            .setMobile(new CVMobile())
-                                            .setNumeric(new CVNumeric())
-                                            .setRegex(new CVRegex()))));
+                            .setCreate(cCreateOrUpdateConf)
+                            .setUpdate(cCreateOrUpdateConf));
             cApi.setProperties(Collections.singletonList(cProperty));
             cApi.setQuery(new CQuery()
                     .setFroms(Collections.singletonList(new CFrom()
@@ -540,6 +554,18 @@ public class CrudMojo extends AbstractPersistenceMojo {
             boolean isVersion = StringUtils.equalsAnyIgnoreCase(attr.getColumnName(), "last_modify_time", "lastModifyTime", "last_modify_at", "lastModifyAt");
             boolean isStatus = StringUtils.equals(attr.getVarName(), "status");
             boolean isRequired = !view && entityInfo.getNonNullableFields().contains(attr);
+            CCreateOrUpdateConf cCreateOrUpdateConf = new CCreateOrUpdateConf()
+                    .setEnabled(!view && !(isPrimary || isRegion || isVersion || attr.isReadonly()))
+                    .setRequired(isRequired)
+                    .setValidation(new CValidation()
+                            .setEmail(new CVEmail())
+                            .setIdCard(new CVIdCard())
+                            .setMobile(new CVMobile())
+                            .setNumeric(new CVNumeric())
+                            .setRegex(new CVRegex())
+                            .setDataRange(new CVDataRange())
+                            .setDateTime(new CVDateTime())
+                            .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision())));
             CConfig cConfig = new CConfig()
                     .setQuery(new CQueryConf()
                             .setEnabled(!isPrimary)
@@ -553,18 +579,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setRegex(new CVRegex())
                                     .setDataRange(new CVDataRange())
                                     .setDateTime(new CVDateTime().setEnabled(isRegion || isVersion).setSingle(!isRegion && !isVersion))))
-                    .setCreateOrUpdate(new CCreateOrUpdateConf()
-                            .setEnabled(!view && !(isPrimary || isRegion || isVersion || attr.isReadonly()))
-                            .setRequired(isRequired)
-                            .setValidation(new CValidation()
-                                    .setEmail(new CVEmail())
-                                    .setIdCard(new CVIdCard())
-                                    .setMobile(new CVMobile())
-                                    .setNumeric(new CVNumeric())
-                                    .setRegex(new CVRegex())
-                                    .setDataRange(new CVDataRange())
-                                    .setDateTime(new CVDateTime())
-                                    .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))));
+                    .setCreate(cCreateOrUpdateConf)
+                    .setUpdate(cCreateOrUpdateConf);
             if (!view) {
                 if (isStatus) {
                     cConfig.setStatus(Arrays.asList(new CStatusConf().setEnabled(true).setName(languageMap.get("enable")).setMethodName("statusEnable").setDescription(languageMap.get("enable")).setMapping("/status/enable").setValue("0"),
@@ -981,7 +997,12 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         private CQueryConf query;
 
+        @JSONField(serialize = false)
         private CCreateOrUpdateConf createOrUpdate;
+
+        private CCreateOrUpdateConf create;
+
+        private CCreateOrUpdateConf update;
 
         private List<CStatusConf> status;
 
@@ -994,12 +1015,38 @@ public class CrudMojo extends AbstractPersistenceMojo {
             return this;
         }
 
+        @Deprecated
         public CCreateOrUpdateConf getCreateOrUpdate() {
             return createOrUpdate;
         }
 
+        @Deprecated
         public CConfig setCreateOrUpdate(CCreateOrUpdateConf createOrUpdate) {
             this.createOrUpdate = createOrUpdate;
+            return this;
+        }
+
+        public CCreateOrUpdateConf getCreate() {
+            if (create == null && createOrUpdate != null) {
+                return createOrUpdate;
+            }
+            return create;
+        }
+
+        public CConfig setCreate(CCreateOrUpdateConf create) {
+            this.create = create;
+            return this;
+        }
+
+        public CCreateOrUpdateConf getUpdate() {
+            if (update == null && createOrUpdate != null) {
+                return createOrUpdate;
+            }
+            return update;
+        }
+
+        public CConfig setUpdate(CCreateOrUpdateConf update) {
+            this.update = update;
             return this;
         }
 

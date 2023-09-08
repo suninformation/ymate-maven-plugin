@@ -19,6 +19,7 @@ package ${app.packageName}.repository;
 
 <#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 import ${app.packageName}.bean.I${prefix}${api.name?cap_first}Bean;<#if !api.view>
+import ${app.packageName}.bean.I${prefix}${api.name?cap_first}CreateBean;
 import ${app.packageName}.bean.I${prefix}${api.name?cap_first}UpdateBean;<#if multiPrimaryKey>
 import ${entityPackageName}.${prefix}${api.name?cap_first}PK;</#if></#if>
 import ${app.packageName}.vo.I${prefix}${api.name?cap_first}VO;
@@ -41,11 +42,11 @@ import net.ymate.platform.persistence.jdbc.query.OrderBy;
  */
 public interface I${prefix}${api.name?cap_first}Repository {
 
-    <#if !api.view><#if !(api.settings??) || api.settings.enableCreate!true>default ErrorCode create${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.type} ${primaryKey.name}, </#if>I${prefix}${api.name?cap_first}UpdateBean updateBean) throws Exception {
-        return create${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.name}, </#if>updateBean);
+    <#if !api.view><#if !(api.settings??) || api.settings.enableCreate!true>default ErrorCode create${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config?? && (primaryKey.config.create?? && primaryKey.config.create.enabled || primaryKey.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled)>${primaryKey.type} ${primaryKey.name}, </#if>I${prefix}${api.name?cap_first}CreateBean createBean) throws Exception {
+        return create${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id, <#elseif primaryKey?? && primaryKey.config?? && (primaryKey.config.create?? && primaryKey.config.create.enabled || primaryKey.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled)>${primaryKey.name}, </#if>createBean);
     }
 
-    ErrorCode create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.createOrUpdate.enabled>${primaryKey.type} ${primaryKey.name}, </#if>I${prefix}${api.name?cap_first}UpdateBean updateBean) throws Exception;</#if>
+    ErrorCode create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config?? && (primaryKey.config.create?? && primaryKey.config.create.enabled || primaryKey.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled)>${primaryKey.type} ${primaryKey.name}, </#if>I${prefix}${api.name?cap_first}CreateBean createBean) throws Exception;</#if>
 
     <#if !(api.settings??) || api.settings.enableUpdate!true>default ErrorCode update${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, I${prefix}${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} ${lastModifyTimeProp.name}</#if>) throws Exception {
         return update${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>, updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.name}</#if>);

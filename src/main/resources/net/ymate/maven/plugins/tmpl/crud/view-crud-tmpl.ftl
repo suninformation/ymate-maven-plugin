@@ -7,19 +7,34 @@
         <adminlte:form-select _name="${p.name}" _id="${p.name}${forUpdate?then('Update', 'Create')}" _label="${(p.description?? && p.description?trim?length > 0)?then(p.description, p.name)}" _helpText="" _class="dictStatus"/><#else>
         <adminlte:form-input _name="${p.name}" _id="${p.name}${forUpdate?then('Update', 'Create')}" _label="${(p.description?? && p.description?trim?length > 0)?then(p.description, p.name)}" _helpText="" _type="text" _placeholder=""/></#if>
 </#macro>
-<#macro buildValidationRule p>
-    ${p.name}: {<#if p.config.createOrUpdate.required>
-        required: true,</#if><#if p.config.createOrUpdate.validation??><#if p.config.createOrUpdate.validation.length?? && p.config.createOrUpdate.validation.length.enabled><#if (p.config.createOrUpdate.validation.length.min > 0 && p.config.createOrUpdate.validation.length.max > 0)>
-        rangelength: [${p.config.createOrUpdate.validation.length.min}, ${p.config.createOrUpdate.validation.length.max}],<#elseif (p.config.createOrUpdate.validation.length.eq > 0)>
-        rangelength: [${p.config.createOrUpdate.validation.length.eq}, ${p.config.createOrUpdate.validation.length.eq}],<#elseif (p.config.createOrUpdate.validation.length.min > 0)>
-        minlength: ${p.config.createOrUpdate.validation.length.min},<#elseif (p.config.createOrUpdate.validation.length.max > 0)>
-        maxlength: ${p.config.createOrUpdate.validation.length.max},</#if></#if><#if p.config.createOrUpdate.validation.email?? && p.config.createOrUpdate.validation.email.enabled>
-        email: true,</#if><#if p.config.createOrUpdate.validation.numeric?? && p.config.createOrUpdate.validation.numeric.enabled>
-        number: true, <#if (p.config.createOrUpdate.validation.numeric.min > 0 && p.config.createOrUpdate.validation.numeric.max > 0)>
-        range: [${p.config.createOrUpdate.validation.numeric.min}, ${p.config.createOrUpdate.validation.numeric.max}],<#elseif (p.config.createOrUpdate.validation.numeric.eq > 0)>
-        range: [${p.config.createOrUpdate.validation.numeric.eq}, ${p.config.createOrUpdate.validation.numeric.eq}],<#elseif (p.config.createOrUpdate.validation.numeric.min > 0)>
-        min: ${p.config.createOrUpdate.validation.numeric.min},<#elseif (p.config.createOrUpdate.validation.numeric.max > 0)>
-        max: ${p.config.createOrUpdate.validation.numeric.max},</#if></#if></#if>
+<#macro buildCreateValidationRule p>
+    ${p.name}: {<#if p.config.create.required>
+        required: true,</#if><#if p.config.create.validation??><#if p.config.create.validation.length?? && p.config.create.validation.length.enabled><#if (p.config.create.validation.length.min > 0 && p.config.create.validation.length.max > 0)>
+        rangelength: [${p.config.create.validation.length.min}, ${p.config.create.validation.length.max}],<#elseif (p.config.create.validation.length.eq > 0)>
+        rangelength: [${p.config.create.validation.length.eq}, ${p.config.create.validation.length.eq}],<#elseif (p.config.create.validation.length.min > 0)>
+        minlength: ${p.config.create.validation.length.min},<#elseif (p.config.create.validation.length.max > 0)>
+        maxlength: ${p.config.create.validation.length.max},</#if></#if><#if p.config.create.validation.email?? && p.config.create.validation.email.enabled>
+        email: true,</#if><#if p.config.create.validation.numeric?? && p.config.create.validation.numeric.enabled>
+        number: true, <#if (p.config.create.validation.numeric.min > 0 && p.config.create.validation.numeric.max > 0)>
+        range: [${p.config.create.validation.numeric.min}, ${p.config.create.validation.numeric.max}],<#elseif (p.config.create.validation.numeric.eq > 0)>
+        range: [${p.config.create.validation.numeric.eq}, ${p.config.create.validation.numeric.eq}],<#elseif (p.config.create.validation.numeric.min > 0)>
+        min: ${p.config.create.validation.numeric.min},<#elseif (p.config.create.validation.numeric.max > 0)>
+        max: ${p.config.create.validation.numeric.max},</#if></#if></#if>
+    },
+</#macro>
+<#macro buildUpdateValidationRule p>
+    ${p.name}: {<#if p.config.update.required>
+        required: true,</#if><#if p.config.update.validation??><#if p.config.update.validation.length?? && p.config.update.validation.length.enabled><#if (p.config.update.validation.length.min > 0 && p.config.update.validation.length.max > 0)>
+        rangelength: [${p.config.update.validation.length.min}, ${p.config.update.validation.length.max}],<#elseif (p.config.update.validation.length.eq > 0)>
+        rangelength: [${p.config.update.validation.length.eq}, ${p.config.update.validation.length.eq}],<#elseif (p.config.update.validation.length.min > 0)>
+        minlength: ${p.config.update.validation.length.min},<#elseif (p.config.update.validation.length.max > 0)>
+        maxlength: ${p.config.update.validation.length.max},</#if></#if><#if p.config.update.validation.email?? && p.config.update.validation.email.enabled>
+        email: true,</#if><#if p.config.update.validation.numeric?? && p.config.update.validation.numeric.enabled>
+        number: true, <#if (p.config.update.validation.numeric.min > 0 && p.config.update.validation.numeric.max > 0)>
+        range: [${p.config.update.validation.numeric.min}, ${p.config.update.validation.numeric.max}],<#elseif (p.config.update.validation.numeric.eq > 0)>
+        range: [${p.config.update.validation.numeric.eq}, ${p.config.update.validation.numeric.eq}],<#elseif (p.config.update.validation.numeric.min > 0)>
+        min: ${p.config.update.validation.numeric.min},<#elseif (p.config.update.validation.numeric.max > 0)>
+        max: ${p.config.update.validation.numeric.max},</#if></#if></#if>
     },
 </#macro>
 <%--
@@ -90,16 +105,21 @@
                     ]
                 });</#if>
 
-                <#if !(api.settings??) || api.settings.enableCreate!true || api.settings.enableUpdate!true>var _validationRules = {
-                    <#if multiPrimaryKey><#list primaryFields as p><@buildValidationRule p/></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled><@buildValidationRule primaryKey/></#if>
-                    <#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled><@buildValidationRule p/></#if></#list>
+                <#if !(api.settings??) || api.settings.enableCreate!true || api.settings.enableUpdate!true>var _createValidationRules = {
+                    <#if multiPrimaryKey><#list primaryFields as p><@buildCreateValidationRule p/></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.create?? && primaryKey.config.create.enabled><@buildCreateValidationRule primaryKey/></#if>
+                    <#list normalFields as p><#if p.config?? && p.config.create?? && p.config.create.enabled><@buildCreateValidationRule p/></#if></#list>
+                };</#if>
+
+                <#if !(api.settings??) || api.settings.enableUpdate!true || api.settings.enableUpdate!true>var _updateValidationRules = {
+                    <#if multiPrimaryKey><#list primaryFields as p><@buildUpdateValidationRule p/></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.update?? && primaryKey.config.update.enabled><@buildUpdateValidationRule primaryKey/></#if>
+                    <#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled><@buildUpdateValidationRule p/></#if></#list>
                 };</#if>
 
                 <#list api.properties as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.column?lower_case == "create_time" || p.column?lower_case == "createtime" || p.column?lower_case == "create_at" || p.column?lower_case == "createat" || p.column?lower_case == "last_modify_time" || p.column?lower_case == "lastmodifytime" || p.column?lower_case == "last_modify_at" || p.column?lower_case == "lastmodifyat">
                 $('.datetimepicker.${p.name}').dateRangeWrapper();
 
                 </#if></#if></#list>
-                <#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled><#if p.column?lower_case == "create_time" || p.column?lower_case == "createtime" || p.column?lower_case == "create_at" || p.column?lower_case == "createat" || p.column?lower_case == "last_modify_time" || p.column?lower_case == "lastmodifytime" || p.column?lower_case == "last_modify_at" || p.column?lower_case == "lastmodifyat">
+                <#list normalFields as p><#if p.config?? && (p.config.create?? && p.config.create.enabled || p.config.update?? && p.config.update.enabled)><#if p.column?lower_case == "create_time" || p.column?lower_case == "createtime" || p.column?lower_case == "create_at" || p.column?lower_case == "createat" || p.column?lower_case == "last_modify_time" || p.column?lower_case == "lastmodifytime" || p.column?lower_case == "last_modify_at" || p.column?lower_case == "lastmodifyat">
                 $('.datetime.${p.name}').datetimepicker({
                     format: 'YYYY-MM-DD',
                     locale: 'zh-cn',
@@ -316,7 +336,7 @@
                                 timeout: 0,
                                 validation: {
                                     enabled: true,
-                                    rules: _validationRules,
+                                    rules: _createValidationRules,
                                 },
                                 beforeSubmit: function (formWrapper, requestOpts, data) {
                                 },
@@ -348,7 +368,7 @@
                                 timeout: 0,
                                 validation: {
                                     enabled: true,
-                                    rules: _validationRules,
+                                    rules: _updateValidationRules,
                                 },
                                 beforeSubmit: function (formWrapper, requestOpts, data) {
                                 },
@@ -443,8 +463,8 @@
                                 _large="true"
                                 _scrollable="true">
                     <div class="messageShow" data-message-show="这里是默认提示信息。"></div>
-                    <#if multiPrimaryKey><#list primaryFields as p><@buildFormItem p false/></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.createOrUpdate?? && primaryKey.config.createOrUpdate.enabled><@buildFormItem primaryKey false/></#if>
-                    <#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled><@buildFormItem p false/></#if></#list>
+                    <#if multiPrimaryKey><#list primaryFields as p><@buildFormItem p false/></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.create?? && primaryKey.config.create.enabled><@buildFormItem primaryKey false/></#if>
+                    <#list normalFields as p><#if p.config?? && p.config.create?? && p.config.create.enabled><@buildFormItem p false/></#if></#list>
                 </adminlte:modal></#if><#if !(api.settings??) || api.settings.enableUpdate!true>
                 <adminlte:modal _id="updateModal"
                                 _title="修改"
@@ -459,7 +479,7 @@
                     <div class="messageShow" data-message-show="这里是默认提示信息。"></div><#list primaryFields as p>
                     <input name="${p.name}" type="hidden"></#list><#if lastModifyTimeProp??>
                     <input name="${lastModifyTimeProp.name}" type="hidden"></#if>
-                    <#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled><@buildFormItem p true/></#if></#list>
+                    <#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled><@buildFormItem p true/></#if></#list>
                 </adminlte:modal></#if>
                 <adminlte:modal _id="detailModal"
                                 _title="详情"

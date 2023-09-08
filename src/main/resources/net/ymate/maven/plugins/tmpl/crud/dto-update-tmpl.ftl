@@ -40,24 +40,24 @@ public class ${prefix}${api.name?cap_first}UpdateDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled><#if (p.description??)>
+<#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled><#if (p.description??)>
     /**
      * ${p.description}
      */</#if><#if apidocs>
-    @ApiParam</#if><#if p.config.createOrUpdate.required>
-    @VRequired</#if><#if p.config.createOrUpdate.validation??><#if p.config.createOrUpdate.validation.length?? && p.config.createOrUpdate.validation.length.enabled>
-    @VLength(min = ${p.config.createOrUpdate.validation.length.min}, max = ${p.config.createOrUpdate.validation.length.max}, eq = ${p.config.createOrUpdate.validation.length.eq}<#if (p.config.createOrUpdate.validation.length.msg?length > 0)>, msg = "${p.config.createOrUpdate.validation.length.msg}"</#if>)</#if><#if p.config.createOrUpdate.validation.dataRange?? && p.config.createOrUpdate.validation.dataRange.enabled && p.config.createOrUpdate.validation.dataRange.values?? && (p.config.createOrUpdate.validation.dataRange.values?size > 0)>
-    @VDataRange(value = {<#list p.config.createOrUpdate.validation.dataRange.values as v>"${v}"<#if v_has_next>, </#if></#list>}, ignoreCase = ${p.config.createOrUpdate.validation.dataRange.ignoreCase?string}<#if (p.config.createOrUpdate.validation.dataRange.msg?length > 0)>, msg = "${p.config.createOrUpdate.validation.dataRange.msg}"</#if>)</#if><#if p.config.createOrUpdate.validation??><#if p.config.createOrUpdate.validation.regex?? && p.config.createOrUpdate.validation.regex.enabled && (p.config.createOrUpdate.validation.regex.regex?length > 0)>
-    @VRegex(regex = "${p.config.createOrUpdate.validation.regex.regex}"<#if (p.config.createOrUpdate.validation.regex.msg?length > 0)>, msg = "${p.config.createOrUpdate.validation.regex.msg}"</#if>)</#if><#if p.config.createOrUpdate.validation.idCard?? && p.config.createOrUpdate.validation.idCard.enabled>
-    @VIDCard<#if (p.config.createOrUpdate.validation.idCard.msg?length > 0)>(msg = "${p.config.createOrUpdate.validation.idCard.msg}")</#if></#if><#if p.config.createOrUpdate.validation.email?? && p.config.createOrUpdate.validation.email.enabled>
-    @VEmail<#if (p.config.createOrUpdate.validation.email.msg?length > 0)>(msg = "${p.config.createOrUpdate.validation.email.msg}")</#if></#if><#if p.config.createOrUpdate.validation.mobile?? && p.config.createOrUpdate.validation.mobile.enabled>
-    @VMobile(regex = "${p.config.createOrUpdate.validation.mobile.regex!""}"<#if (p.config.createOrUpdate.validation.mobile.msg?length > 0)>, msg = "${p.config.createOrUpdate.validation.mobile.msg}"</#if><#if (p.config.createOrUpdate.validation.mobile.msg?length > 0)>, msg = "${p.config.createOrUpdate.validation.mobile.msg}"</#if>)</#if><#if p.config.createOrUpdate.validation.numeric?? && p.config.createOrUpdate.validation.numeric.enabled>
-    @VNumeric(min = ${p.config.createOrUpdate.validation.numeric.min}, max = ${p.config.createOrUpdate.validation.numeric.max}, eq = ${p.config.createOrUpdate.validation.numeric.eq}, decimals = ${p.config.createOrUpdate.validation.numeric.decimals}<#if (p.config.createOrUpdate.validation.numeric.msg?length > 0)>, msg = "${p.config.createOrUpdate.validation.numeric.msg}"</#if>)</#if></#if><#if p.description?? && (p.description?length > 0)>
+    @ApiParam</#if><#if p.config.update.required>
+    @VRequired</#if><#if p.config.update.validation??><#if p.config.update.validation.length?? && p.config.update.validation.length.enabled>
+    @VLength(min = ${p.config.update.validation.length.min}, max = ${p.config.update.validation.length.max}, eq = ${p.config.update.validation.length.eq}<#if (p.config.update.validation.length.msg?length > 0)>, msg = "${p.config.update.validation.length.msg}"</#if>)</#if><#if p.config.update.validation.dataRange?? && p.config.update.validation.dataRange.enabled && p.config.update.validation.dataRange.values?? && (p.config.update.validation.dataRange.values?size > 0)>
+    @VDataRange(value = {<#list p.config.update.validation.dataRange.values as v>"${v}"<#if v_has_next>, </#if></#list>}, ignoreCase = ${p.config.update.validation.dataRange.ignoreCase?string}<#if (p.config.update.validation.dataRange.msg?length > 0)>, msg = "${p.config.update.validation.dataRange.msg}"</#if>)</#if><#if p.config.update.validation??><#if p.config.update.validation.regex?? && p.config.update.validation.regex.enabled && (p.config.update.validation.regex.regex?length > 0)>
+    @VRegex(regex = "${p.config.update.validation.regex.regex}"<#if (p.config.update.validation.regex.msg?length > 0)>, msg = "${p.config.update.validation.regex.msg}"</#if>)</#if><#if p.config.update.validation.idCard?? && p.config.update.validation.idCard.enabled>
+    @VIDCard<#if (p.config.update.validation.idCard.msg?length > 0)>(msg = "${p.config.update.validation.idCard.msg}")</#if></#if><#if p.config.update.validation.email?? && p.config.update.validation.email.enabled>
+    @VEmail<#if (p.config.update.validation.email.msg?length > 0)>(msg = "${p.config.update.validation.email.msg}")</#if></#if><#if p.config.update.validation.mobile?? && p.config.update.validation.mobile.enabled>
+    @VMobile(regex = "${p.config.update.validation.mobile.regex!""}"<#if (p.config.update.validation.mobile.msg?length > 0)>, msg = "${p.config.update.validation.mobile.msg}"</#if><#if (p.config.update.validation.mobile.msg?length > 0)>, msg = "${p.config.update.validation.mobile.msg}"</#if>)</#if><#if p.config.update.validation.numeric?? && p.config.update.validation.numeric.enabled>
+    @VNumeric(min = ${p.config.update.validation.numeric.min}, max = ${p.config.update.validation.numeric.max}, eq = ${p.config.update.validation.numeric.eq}, decimals = ${p.config.update.validation.numeric.decimals}<#if (p.config.update.validation.numeric.msg?length > 0)>, msg = "${p.config.update.validation.numeric.msg}"</#if>)</#if></#if><#if p.description?? && (p.description?length > 0)>
     @VField(name = "${p.description}")</#if></#if>
     @RequestParam
     private ${p.type} ${p.name};</#if>
 
-</#list><#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
+</#list><#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled>
     public ${p.type} get${p.name?cap_first}() {
         return ${p.name};
     }
@@ -68,14 +68,14 @@ public class ${prefix}${api.name?cap_first}UpdateDTO implements Serializable {
 
 </#if></#list><#if (normalFields?size > 0)>
     public ${prefix}${api.name?cap_first}UpdateBean toBean() {
-        ${prefix}${api.name?cap_first}UpdateBean.Builder builder = ${prefix}${api.name?cap_first}UpdateBean.builder()<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
+        ${prefix}${api.name?cap_first}UpdateBean.Builder builder = ${prefix}${api.name?cap_first}UpdateBean.builder()<#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled>
                 .${p.name}(${p.name})</#if></#list>;
         return builder.build();
     }
 
 <#--    @Override-->
 <#--    public String toString() {-->
-<#--        return new ToStringBuilder(this)<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>-->
+<#--        return new ToStringBuilder(this)<#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled>-->
 <#--            .append("${p.name}", ${p.name})</#if></#list>-->
 <#--        .toString();-->
 <#--    }-->
@@ -106,7 +106,7 @@ public class ${prefix}${api.name?cap_first}UpdateDTO implements Serializable {
 
         public ${prefix}${api.name?cap_first}UpdateDTO build() {
             return targetDTO;
-        }<#list normalFields as p><#if p.config?? && p.config.createOrUpdate?? && p.config.createOrUpdate.enabled>
+        }<#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled>
 
         public ${p.type} ${p.name}() {
             return targetDTO.get${p.name?cap_first}();
