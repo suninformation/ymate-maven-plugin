@@ -103,6 +103,8 @@ public class ${prefix}${api.name?cap_first}Tag extends AbstractTagSupport implem
 
     private Integer pageSize;
 
+    private boolean useCount = true;
+
     @Override
     protected Object doProcessTagData() throws JspException {
         try {
@@ -122,7 +124,7 @@ public class ${prefix}${api.name?cap_first}Tag extends AbstractTagSupport implem
                 if (StringUtils.isNotBlank(orderByFields)) {
                     orderBy = OrderBy.create(databaseOwner, dataSourceName).orderBy(orderByFields);
                 }
-                IResultSet<I${prefix}${api.name?cap_first}VO> result = repository.query${api.name?cap_first}s(databaseOwner, dataSourceName, this, null, orderBy, fields, Page.createIfNeed(page, pageSize));
+                IResultSet<I${prefix}${api.name?cap_first}VO> result = repository.query${api.name?cap_first}s(databaseOwner, dataSourceName, this, null, orderBy, fields, Page.createIfNeed(page, pageSize, useCount));
                 if (doInitIterator(result.getResultData().iterator(), result.getPageCount(), result.getRecordCount())) {
                     return null;
                 }
@@ -177,4 +179,11 @@ public class ${prefix}${api.name?cap_first}Tag extends AbstractTagSupport implem
         this.pageSize = pageSize;
     }
 
+    public boolean isUseCount() {
+        return useCount;
+    }
+
+    public void setUseCount(boolean useCount) {
+        this.useCount = useCount;
+    }
 }

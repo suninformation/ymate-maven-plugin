@@ -15,8 +15,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ymate.platform.version>2.1.2</ymate.platform.version>
-        <ymate.apidocs.version>2.0.1</ymate.apidocs.version>
+        <ymate.platform.version>2.1.3-dev</ymate.platform.version>
+        <ymate.apidocs.version>2.0.2-dev</ymate.apidocs.version>
     </properties>
 
     <developers>

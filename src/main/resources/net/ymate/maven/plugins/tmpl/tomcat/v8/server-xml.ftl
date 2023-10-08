@@ -122,6 +122,14 @@
         -->
         <Engine name="Catalina" defaultHost="localhost">
 
+            <!-- https://tomcat.apache.org/tomcat-8.5-doc/config/valve.html#Remote_IP_Valve -->
+            <!--
+            <Valve className="org.apache.catalina.valves.RemoteIpValve"
+                   remoteIpHeader="X-Forwarded-For"
+                   protocolHeader="X-Forwarded-Proto"
+                   protocolHeaderHttpsValue="https"/>
+            -->
+
             <!--For clustering, please take a look at documentation at:
                 /docs/cluster-howto.html  (simple how to)
                 /docs/config/cluster.html (reference documentation) -->

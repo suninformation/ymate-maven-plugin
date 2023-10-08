@@ -70,12 +70,13 @@ server {
         proxy_pass                          http://${service_name};
         access_log                          off;
         proxy_redirect                      off;
-        proxy_set_header Host               $host;
+        proxy_set_header Host               $http_host;
         proxy_set_header X-Real-IP          $remote_addr;
         proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
-        proxy_set_header                    X-Forwarded-Proto $scheme;
-        proxy_set_header                    Accept-Encoding 'gzip';
-        client_max_body_size                10m;
+        proxy_set_header X-Forwarded-Proto  $scheme;
+        proxy_set_header X-Forwarded-Uri    $request_uri;
+        proxy_set_header Accept-Encoding    'gzip';
+        client_max_body_size                30m;
         client_body_buffer_size             256k;
         proxy_connect_timeout               500;
         proxy_send_timeout                  2000;

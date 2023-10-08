@@ -15,6 +15,7 @@
  */
 package net.ymate.maven.plugins;
 
+import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread;
 import net.ymate.platform.core.*;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.impl.DefaultApplicationConfigureParser;
@@ -26,6 +27,10 @@ import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseDataSourceConfigu
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
+
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.util.Enumeration;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-12-24 13:28
@@ -68,6 +73,22 @@ public abstract class AbstractPersistenceMojo extends AbstractMojo {
                 return configurer;
             }
         };
+    }
+
+    /**
+     * 用于释放 MySQL 驱动程序中未关闭的线程
+     */
+    protected void releaseAbandonedConnectionCleanupThreadIfNeed() {
+        try {
+            Enumeration<Driver> drivers = DriverManager.getDrivers();
+            while (drivers.hasMoreElements()) {
+                Driver driver = drivers.nextElement();
+                DriverManager.deregisterDriver(driver);
+                // getLog().info(String.format("Unregistering jdbc driver: %s", driver));
+            }
+            AbandonedConnectionCleanupThread.uncheckedShutdown();
+        } catch (Exception ignored) {
+        }
     }
 
     public String getDataSource() {

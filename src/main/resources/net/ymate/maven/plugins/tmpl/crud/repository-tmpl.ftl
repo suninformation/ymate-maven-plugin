@@ -120,14 +120,16 @@ public class ${prefix}${api.name?cap_first}Repository implements I${prefix}${api
                 EntityStateWrapper<${entityName}> stateWrapper = entity.stateWrapper(false);
                 ${entityName}.Builder builder = stateWrapper.getEntity().bind()<#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled>
                         .${p.name}(updateBean.get${p.name?cap_first}())</#if></#list>;
-                errorCode = doCheck(owner, dataSourceName, builder);
-                if (errorCode == null) {
-                    if (stateWrapper.hasChanged()) {<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
+                int effectCounts = 0;
+                if (stateWrapper.hasChanged()) {
+                    errorCode = doCheck(owner, dataSourceName, builder);
+                    if (errorCode == null) {<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
                         builder.${lastModifyTimeProp.name}(System.currentTimeMillis());</#if>
-                        if (stateWrapper.update() != null) {
-                            errorCode = ErrorCode.succeed();
-                        }
+                        effectCounts = stateWrapper.update() != null ? 1 : 0;
                     }
+                }
+                if (errorCode == null) {
+                    errorCode = ErrorCode.succeed().dataAttr("effectCounts", effectCounts);
                 }
             }
         }

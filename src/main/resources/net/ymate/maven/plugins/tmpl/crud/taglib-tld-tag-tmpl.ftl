@@ -73,4 +73,9 @@
         <rtexprvalue>true</rtexprvalue>
         <type>java.lang.Integer</type>
     </attribute>
+    <attribute>
+        <name>useCount</name>
+        <rtexprvalue>true</rtexprvalue>
+        <type>java.lang.Boolean</type>
+    </attribute>
 </tag>
