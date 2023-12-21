@@ -27,19 +27,20 @@ mvn ymate:<命令> -D<参数1>=<值1> -D<参数n>=<值n>
 
 ## 命令列表
 
-|命令|说明|
-|---|---|
-|`apidocs`|接口文档生成器|
-|`configuration`|配置体系目录结构生成器|
-|`crud`|CRUD 代码生成器|
-|`dbquery`|数据库 SQL 查询|
-|`decrypt`|字符串解密|
-|`encrypt`|字符串加密|
-|`entity`|数据实体代码生成器|
-|`interceptor`|拦截器类生成器|
-|`module`|模块代码生成器|
-|`tomcat`|Tomcat 服务配置生成器|
-|`validator`|验证器类生成器|
+| 命令              | 说明             |
+|-----------------|----------------|
+| `apidocs`       | 接口文档生成器        |
+| `configuration` | 配置体系目录结构生成器    |
+| `crud`          | CRUD 代码生成器     |
+| `dbquery`       | 数据库 SQL 查询     |
+| `decrypt`       | 字符串解密          |
+| `encrypt`       | 字符串加密          |
+| `entity`        | 数据实体代码生成器      |
+| `event`         | 事件类代码生成器       |
+| `interceptor`   | 拦截器类生成器        |
+| `module`        | 模块代码生成器        |
+| `tomcat`        | Tomcat 服务配置生成器 |
+| `validator`     | 验证器类生成器        |
 
 
 
@@ -221,6 +222,25 @@ mvn ymate:encrypt -Dcontent=abc12345678
 
 ```java
 mvn ymate:entity
+```
+
+
+### event
+
+事件类代码生成器。
+
+#### 参数列表
+
+| 参数名称        |必须| 说明                             |
+|-------------|---|--------------------------------|
+| name        |是| 事件类名称                          |
+| events      |是| 事件名称集合，默认为类名称，多个名称之间用 `,` 分隔   |
+| packageName |否| 拦截器包名，默认值：`${project.groupId}` |
+
+#### 命令示例
+
+```java
+mvn ymate:event -Dname=Demo -Devents=demoCreated,demoRemoved
 ```
 
 
