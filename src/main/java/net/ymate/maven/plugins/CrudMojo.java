@@ -263,17 +263,17 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     doWriterTemplateFile(new File(path, String.format("repository/impl/%sRepository.java", apiFullName)), "/crud/repository-tmpl", properties);
                                     if (enableQuery) {
                                         doWriterTemplateFile(new File(path, String.format("vo/I%sVO.java", apiFullName)), "/crud/vo-interface-tmpl", properties);
-                                        doWriterTemplateFile(new File(path, String.format("vo/%sVO.java", apiFullName)), "/crud/vo-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("vo/impl/%sVO.java", apiFullName)), "/crud/vo-tmpl", properties);
                                         doWriterTemplateFile(new File(path, String.format("bean/I%sBean.java", apiFullName)), "/crud/bean-interface-tmpl", properties);
-                                        doWriterTemplateFile(new File(path, String.format("bean/%sBean.java", apiFullName)), "/crud/bean-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/impl/%sBean.java", apiFullName)), "/crud/bean-tmpl", properties);
                                     }
                                     if (enableCreate) {
                                         doWriterTemplateFile(new File(path, String.format("bean/I%sCreateBean.java", apiFullName)), "/crud/bean-create-interface-tmpl", properties);
-                                        doWriterTemplateFile(new File(path, String.format("bean/%sCreateBean.java", apiFullName)), "/crud/bean-create-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/impl/%sCreateBean.java", apiFullName)), "/crud/bean-create-tmpl", properties);
                                     }
                                     if (enableUpdate) {
                                         doWriterTemplateFile(new File(path, String.format("bean/I%sUpdateBean.java", apiFullName)), "/crud/bean-update-interface-tmpl", properties);
-                                        doWriterTemplateFile(new File(path, String.format("bean/%sUpdateBean.java", apiFullName)), "/crud/bean-update-tmpl", properties);
+                                        doWriterTemplateFile(new File(path, String.format("bean/impl/%sUpdateBean.java", apiFullName)), "/crud/bean-update-tmpl", properties);
                                     }
                                     if (test) {
                                         doWriterTemplateFile(new File(testPath, String.format("repository/impl/%sRepositoryTest.java", apiFullName)), "/crud/repository-test", properties);
@@ -397,7 +397,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 CApplication cApp = new CApplication()
                         .setName(getProjectName())
                         .setPackageName(getPackageName())
-                        .setAuthor("YMP (https://www.ymate.net/)")
+                        .setAuthor("YMP (<a href=\"https://www.ymate.net/\">ymate.net</a>)")
                         .setVersion(getVersion())
                         .setCreateTime(DateTimeHelper.now().toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
                 //
@@ -431,7 +431,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
             CApplication cApp = new CApplication()
                     .setName(getProjectName())
                     .setPackageName(getPackageName())
-                    .setAuthor("YMP (https://www.ymate.net/")
+                    .setAuthor("YMP (<a href=\"https://www.ymate.net/\">ymate.net</a>)")
                     .setVersion(getVersion())
                     .setCreateTime(DateTimeHelper.now().toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
             //
@@ -561,7 +561,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             .setEmail(new CVEmail())
                             .setIdCard(new CVIdCard())
                             .setMobile(new CVMobile())
-                            .setNumeric(new CVNumeric())
+                            .setNumeric(new CVNumeric().setEnabled(StringUtils.equalsAny(attr.getVarType(), Integer.class.getName(), Long.class.getName(), Float.class.getName(), Double.class.getName())))
                             .setRegex(new CVRegex())
                             .setDataRange(new CVDataRange())
                             .setDateTime(new CVDateTime())
@@ -575,7 +575,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setIdCard(new CVIdCard())
                                     .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))
                                     .setMobile(new CVMobile())
-                                    .setNumeric(new CVNumeric())
+                                    .setNumeric(new CVNumeric().setEnabled(StringUtils.equalsAny(attr.getVarType(), Integer.class.getName(), Long.class.getName(), Float.class.getName(), Double.class.getName())))
                                     .setRegex(new CVRegex())
                                     .setDataRange(new CVDataRange())
                                     .setDateTime(new CVDateTime().setEnabled(isRegion || isVersion).setSingle(!isRegion && !isVersion))))
