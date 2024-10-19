@@ -573,9 +573,9 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             .setValidation(new CValidation()
                                     .setEmail(new CVEmail())
                                     .setIdCard(new CVIdCard())
-                                    .setLength(new CVLength().setEnabled(!StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))
+                                    .setLength(new CVLength().setEnabled(!isRegion && !StringUtils.equals(attr.getVarType(), Boolean.class.getName())).setMax(attr.getPrecision()))
                                     .setMobile(new CVMobile())
-                                    .setNumeric(new CVNumeric().setEnabled(StringUtils.equalsAny(attr.getVarType(), Integer.class.getName(), Long.class.getName(), Float.class.getName(), Double.class.getName())))
+                                    .setNumeric(new CVNumeric().setEnabled(!isRegion && StringUtils.equalsAny(attr.getVarType(), Integer.class.getName(), Long.class.getName(), Float.class.getName(), Double.class.getName())))
                                     .setRegex(new CVRegex())
                                     .setDataRange(new CVDataRange())
                                     .setDateTime(new CVDateTime().setEnabled(isRegion || isVersion).setSingle(!isRegion && !isVersion))))
@@ -1614,7 +1614,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         private String pattern;
 
-        private boolean single;
+        private boolean single = true;
 
         private String separator;
 
