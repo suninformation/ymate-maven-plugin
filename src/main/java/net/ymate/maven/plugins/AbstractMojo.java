@@ -16,6 +16,7 @@
 package net.ymate.maven.plugins;
 
 import freemarker.template.Configuration;
+import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import net.ymate.platform.commons.FreemarkerConfigBuilder;
@@ -78,12 +79,6 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
 
     public AbstractMojo() {
         templateRootPath = AbstractMojo.class.getPackage().getName().replace(".", "/");
-        try {
-            freemarkerConfig = FreemarkerConfigBuilder.create().addTemplateClass(AbstractMojo.class, "/")
-                    .setTemplateExceptionHandler(TemplateExceptionHandler.DEBUG_HANDLER).build();
-        } catch (IOException e) {
-            getLog().error(RuntimeUtils.unwrapThrow(e));
-        }
     }
 
     public IConfigReader getDefaultConfigFileAsReader() {
@@ -142,8 +137,13 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
         if (!tmplFile.endsWith(".ftl")) {
             tmplFile = String.format("%s.ftl", tmplFile);
         }
-        try (Writer writer = new OutputStreamWriter(output, getFreemarkerConfig().getOutputEncoding())) {
-            getFreemarkerConfig().getTemplate(getTemplateRootPath() + tmplFile).process(properties, new BufferedWriter(writer));
+        Configuration configuration = getFreemarkerConfig();
+        try (Writer writer = new OutputStreamWriter(output, configuration.getOutputEncoding())) {
+            Template template = configuration.getTemplate(tmplFile, null, null, true, true);
+            if (template == null) {
+                template = configuration.getTemplate(getTemplateRootPath() + tmplFile);
+            }
+            template.process(properties, new BufferedWriter(writer));
         }
     }
 
@@ -183,6 +183,17 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
     }
 
     public Configuration getFreemarkerConfig() {
+        if (freemarkerConfig == null) {
+            try {
+                FreemarkerConfigBuilder freemarkerConfigBuilder = FreemarkerConfigBuilder.create()
+                        .addTemplateClass(AbstractMojo.class, "/")
+                        .addTemplateFileDir(new File(basedir, "/misc"))
+                        .setTemplateExceptionHandler(TemplateExceptionHandler.DEBUG_HANDLER);
+                freemarkerConfig = freemarkerConfigBuilder.build();
+            } catch (IOException e) {
+                getLog().error(RuntimeUtils.unwrapThrow(e));
+            }
+        }
         return freemarkerConfig;
     }
 
