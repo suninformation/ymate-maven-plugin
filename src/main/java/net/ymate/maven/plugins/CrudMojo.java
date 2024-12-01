@@ -126,7 +126,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 languageMap.put("page", "页号");
                 languageMap.put("page_description", "取值范围：大于0的整数");
                 languageMap.put("pageSize", "每页记录数");
-                languageMap.put("pageSize_description", "取值范围：20-200");
+                languageMap.put("pageSize_description", "取值范围：10-100");
             } else {
                 languageMap.put("query", "Query");
                 languageMap.put("detail", "Detail");
@@ -141,7 +141,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 languageMap.put("page", "Page number");
                 languageMap.put("page_description", "Value range: An integer greater than 0");
                 languageMap.put("pageSize", "Records per page");
-                languageMap.put("pageSize_description", "Value range: 20-200");
+                languageMap.put("pageSize_description", "Value range: 10-100");
             }
             boolean useCdn = false;
             if (StringUtils.equalsIgnoreCase(action, "ui-cdn")) {
@@ -187,6 +187,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
                             for (CApi cApi : cApp.getApis()) {
                                 if (cApi.isLocked()) {
                                     getLog().info("API '" + cApi.getName() + "' has been locked.");
+                                    continue;
+                                }
+                                if (ArrayUtils.isNotEmpty(filter) && !ArrayUtils.contains(filter, cApi.getName())) {
+                                    getLog().info("API '" + cApi.getName() + "' has been filtered.");
                                     continue;
                                 }
                                 cApi.setName(processNamePrefix(cApi.getName()));

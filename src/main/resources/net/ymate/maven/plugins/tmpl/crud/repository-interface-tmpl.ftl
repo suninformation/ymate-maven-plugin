@@ -19,8 +19,8 @@ package ${app.packageName}.repository;
 
 <#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 import ${app.packageName}.bean.I${prefix}${api.name?cap_first}Bean;<#if !api.view>
-import ${app.packageName}.bean.I${prefix}${api.name?cap_first}CreateBean;
-import ${app.packageName}.bean.I${prefix}${api.name?cap_first}UpdateBean;<#if multiPrimaryKey>
+<#if !(api.settings??) || api.settings.enableCreate!true>import ${app.packageName}.bean.I${prefix}${api.name?cap_first}CreateBean;</#if>
+<#if !(api.settings??) || api.settings.enableUpdate!true>import ${app.packageName}.bean.I${prefix}${api.name?cap_first}UpdateBean;</#if><#if multiPrimaryKey>
 import ${entityPackageName}.${prefix}${api.name?cap_first}PK;</#if></#if>
 import ${app.packageName}.vo.I${prefix}${api.name?cap_first}VO;
 import net.ymate.platform.core.persistence.Fields;
@@ -69,10 +69,14 @@ public interface I${prefix}${api.name?cap_first}Repository {
     }
 
     default I${prefix}${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
-        return query${api.name?cap_first}(owner, dataSourceName, <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>, null);
+        return query${api.name?cap_first}(owner, dataSourceName, <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>, null, null);
     }
 
-    I${prefix}${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, Fields excludedFields) throws Exception;</#if>
+    default I${prefix}${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, Fields excludedFields) throws Exception {
+        return query${api.name?cap_first}(owner, dataSourceName, <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>, excludedFields, null);
+    }
+
+    I${prefix}${api.name?cap_first}VO query${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, Fields excludedFields, Cond additionalCond) throws Exception;</#if>
 
     default IResultSet<I${prefix}${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, I${prefix}${api.name?cap_first}Bean queryBean, Fields excludedFields, Page page) throws Exception {
         return query${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), queryBean, null, null, excludedFields, page);
@@ -82,8 +86,8 @@ public interface I${prefix}${api.name?cap_first}Repository {
         return query${api.name?cap_first}s(owner, dataSourceName, queryBean, null, null, excludedFields, page);
     }
 
-    default IResultSet<I${prefix}${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, I${prefix}${api.name?cap_first}Bean queryBean, Cond otherCond, OrderBy orderBy, Fields excludedFields, Page page) throws Exception {
-        return query${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), queryBean, otherCond, orderBy, excludedFields, page);
+    default IResultSet<I${prefix}${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, I${prefix}${api.name?cap_first}Bean queryBean, Cond additionalCond, OrderBy orderBy, Fields excludedFields, Page page) throws Exception {
+        return query${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), queryBean, additionalCond, orderBy, excludedFields, page);
     }
 
     default IResultSet<I${prefix}${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, I${prefix}${api.name?cap_first}Bean queryBean, Page page) throws Exception {
@@ -94,11 +98,11 @@ public interface I${prefix}${api.name?cap_first}Repository {
         return query${api.name?cap_first}s(owner, dataSourceName, queryBean, null, null, null, page);
     }
 
-    default IResultSet<I${prefix}${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, I${prefix}${api.name?cap_first}Bean queryBean, Cond otherCond, OrderBy orderBy, Page page) throws Exception {
-        return query${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), queryBean, otherCond, orderBy, null, page);
+    default IResultSet<I${prefix}${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, I${prefix}${api.name?cap_first}Bean queryBean, Cond additionalCond, OrderBy orderBy, Page page) throws Exception {
+        return query${api.name?cap_first}s(owner, owner.getConfig().getDefaultDataSourceName(), queryBean, additionalCond, orderBy, null, page);
     }
 
-    IResultSet<I${prefix}${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, String dataSourceName, I${prefix}${api.name?cap_first}Bean queryBean, Cond otherCond, OrderBy orderBy, Fields excludedFields, Page page) throws Exception;</#if>
+    IResultSet<I${prefix}${api.name?cap_first}VO> query${api.name?cap_first}s(IDatabase owner, String dataSourceName, I${prefix}${api.name?cap_first}Bean queryBean, Cond additionalCond, OrderBy orderBy, Fields excludedFields, Page page) throws Exception;</#if>
 
     <#if !api.view><#if !(api.settings??) || api.settings.enableRemove!true>default int remove${api.name?cap_first}(IDatabase owner, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
         return remove${api.name?cap_first}(owner, owner.getConfig().getDefaultDataSourceName(), <#if multiPrimaryKey>id<#else>${primaryKey.name}</#if>);

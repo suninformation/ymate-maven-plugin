@@ -43,9 +43,9 @@ public final class PageDTO implements Serializable {
     private Integer page;
 
     <#if apidocs>@ApiParam(description = "${languageMap.pageSize}<br/>${languageMap.pageSize_description}")
-    </#if>@VNumeric(min = 20, max = 200)
+    </#if>@VNumeric(min = 10, max = 100)
     @VField(name = "${languageMap.pageSize}")
-    @RequestParam(defaultValue = "20")
+    @RequestParam(defaultValue = "10")
     private Integer pageSize;
 
     public Integer getPage() {

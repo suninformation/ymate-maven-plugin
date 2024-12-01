@@ -16,6 +16,8 @@
 package ${config.packageName}.${config.classSuffix?lower_case};
 
 import net.ymate.platform.core.persistence.base.IEntity;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
 
@@ -30,4 +32,10 @@ public abstract class BaseEntity<PK extends Serializable> implements IEntity<PK>
 
 	public BaseEntity() {
 	}
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE);
+    }
+
 }

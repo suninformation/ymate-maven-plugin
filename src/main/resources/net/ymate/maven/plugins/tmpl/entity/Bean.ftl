@@ -17,6 +17,7 @@ package ${config.packageName}.bean;
 
 <#if (apidocs)>import net.ymate.apidocs.annotation.ApiProperty;</#if>
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import java.io.Serializable;
 
 /**
@@ -75,10 +76,7 @@ public class ${entityInfo.name?cap_first}Bean implements Serializable {
 </#list>
     @Override
     public String toString() {
-        return new ToStringBuilder(this)<#list entityInfo.primaryKeys as field>
-                .append("${field.varName}", ${field.varName})</#list><#list entityInfo.fields as field><#if field.varName != entityInfo.primaryKeyName || (entityInfo.primaryKeys?size == 0)>
-                .append("${field.varName}", ${field.varName})</#if></#list>
-                .toString();
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE);
     }
 
 <#if (config.useChainMode)>

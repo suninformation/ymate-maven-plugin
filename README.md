@@ -220,7 +220,7 @@ mvn ymate:encrypt -Dcontent=abc12345678
 
 #### 命令示例
 
-```java
+```shell
 mvn ymate:entity
 ```
 
@@ -239,7 +239,7 @@ mvn ymate:entity
 
 #### 命令示例
 
-```java
+```shell
 mvn ymate:event -Dname=Demo -Devents=demoCreated,demoRemoved
 ```
 

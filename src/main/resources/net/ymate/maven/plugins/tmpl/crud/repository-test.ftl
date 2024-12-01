@@ -149,10 +149,10 @@ public class ${prefix}${api.name?cap_first}RepositoryTest {
             .${p.name}(DateTimeValue.today())<#else>
             .${p.name}(<@toSetFieldValue p/>)</#if></#if></#list>
             .build();
-        Cond otherCond = null;
+        Cond additionalCond = null;
         OrderBy orderBy = null;
         Fields excludedFields = Fields.create();
-        IResultSet<I${prefix}${api.name?cap_first}VO> ${api.name?uncap_first}s = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}Bean, otherCond, orderBy, excludedFields, Page.create(1));
+        IResultSet<I${prefix}${api.name?cap_first}VO> ${api.name?uncap_first}s = repository.query${api.name?cap_first}s(database, ${api.name?uncap_first}Bean, additionalCond, orderBy, excludedFields, Page.create(1));
         Assert.assertNotNull(${api.name?uncap_first}s);
     }</#if>
 

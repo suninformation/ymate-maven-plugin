@@ -187,8 +187,11 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
             try {
                 FreemarkerConfigBuilder freemarkerConfigBuilder = FreemarkerConfigBuilder.create()
                         .addTemplateClass(AbstractMojo.class, "/")
-                        .addTemplateFileDir(new File(basedir, "/misc"))
                         .setTemplateExceptionHandler(TemplateExceptionHandler.DEBUG_HANDLER);
+                File miscFile = new File(basedir, "/misc");
+                if (miscFile.exists()) {
+                    freemarkerConfigBuilder.addTemplateFileDir();
+                }
                 freemarkerConfig = freemarkerConfigBuilder.build();
             } catch (IOException e) {
                 getLog().error(RuntimeUtils.unwrapThrow(e));

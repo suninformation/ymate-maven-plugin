@@ -69,6 +69,7 @@ public class ${prefix}${api.name?cap_first}UpdateDTO implements Serializable {
 
 </#if></#list><#if (normalFields?size > 0)>
     public ${prefix}${api.name?cap_first}UpdateBean toBean() {
+        // return ClassUtils.wrapper(this).duplicate(new ${prefix}${api.name?cap_first}UpdateBean());
         ${prefix}${api.name?cap_first}UpdateBean.Builder builder = ${prefix}${api.name?cap_first}UpdateBean.builder()<#list normalFields as p><#if p.config?? && p.config.update?? && p.config.update.enabled><#if p.config.update.validation?? && p.config.update.validation.dateTime?? && p.config.update.validation.dateTime.enabled>
                 .${p.name}(DateTimeValue.getStartDateTimeMillisOrNull("${p.name}"))<#else>
                 .${p.name}(${p.name})</#if></#if></#list>;

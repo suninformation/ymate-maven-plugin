@@ -69,6 +69,7 @@ public class ${prefix}${api.name?cap_first}CreateDTO implements Serializable {
 
 </#if></#list><#if (normalFields?size > 0)>
     public ${prefix}${api.name?cap_first}CreateBean toBean() {
+        // return ClassUtils.wrapper(this).duplicate(new ${prefix}${api.name?cap_first}CreateBean());
         ${prefix}${api.name?cap_first}CreateBean.Builder builder = ${prefix}${api.name?cap_first}CreateBean.builder()<#list normalFields as p><#if p.config?? && p.config.create?? && p.config.create.enabled><#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>
                 .${p.name}(DateTimeValue.getStartDateTimeMillisOrNull("${p.name}"))<#else>
                 .${p.name}(${p.name})</#if></#if></#list>;

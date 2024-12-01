@@ -94,6 +94,7 @@ public class ${prefix}${api.name?cap_first}DTO implements Serializable {
     <@buildGetAndSet p/>
 </#if></#list><#if (normalFields?size > 0)>
     public ${prefix}${api.name?cap_first}Bean toBean() {
+        // return ClassUtils.wrapper(this).duplicate(new ${prefix}${api.name?cap_first}Bean());
         ${prefix}${api.name?cap_first}Bean.Builder builder = ${prefix}${api.name?cap_first}Bean.builder()<#if multiPrimaryKey><#list primaryFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled>
                 .${p.name}(${p.name})</#if></#list><#elseif primaryKey?? && primaryKey.config?? && primaryKey.config.query?? && primaryKey.config.query.enabled>
                 .${primaryKey.name}(${primaryKey.name})</#if><#list normalFields as p><#if p.config?? && p.config.query?? && p.config.query.enabled><#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
