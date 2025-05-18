@@ -127,7 +127,8 @@ public class ${prefix}${api.name?cap_first}RepositoryTest {
         Params values = Params.create();
         Assert.assertTrue(fields.isEmpty());
         Assert.assertTrue(values.isEmpty());
-        int effectCounts = repository.update${api.name?cap_first}s(database, ArrayUtils.toArray(id), fields, values);
+        ErrorCode errorCode = repository.update${api.name?cap_first}s(database, ArrayUtils.toArray(id), fields, values);
+        int effectCounts = errorCode != null ? errorCode.dataAttr("effectCounts") : 0;
         Assert.assertTrue(effectCounts > 0);
     }</#if></#if>
 
@@ -163,7 +164,8 @@ public class ${prefix}${api.name?cap_first}RepositoryTest {
         Assert.assertNotNull(id);<#elseif primaryKey?? && !primaryKey.autoIncrement>
         ${primaryKey.type} id = null;
         Assert.assertNotNull(id);</#if>
-        int effectCounts = repository.remove${api.name?cap_first}(database, id);
+        ErrorCode errorCode = repository.remove${api.name?cap_first}(database, id);
+        int effectCounts = errorCode != null ? errorCode.dataAttr("effectCounts") : 0;
         Assert.assertTrue(effectCounts > 0);
     }
 
@@ -174,7 +176,8 @@ public class ${prefix}${api.name?cap_first}RepositoryTest {
         Assert.assertNotNull(id);<#elseif primaryKey?? && !primaryKey.autoIncrement>
         ${primaryKey.type} id = null;
         Assert.assertNotNull(id);</#if>
-        int effectCounts = repository.remove${api.name?cap_first}s(database, ArrayUtils.toArray(id));
+        ErrorCode errorCode = repository.remove${api.name?cap_first}s(database, ArrayUtils.toArray(id));
+        int effectCounts = errorCode != null ? errorCode.dataAttr("effectCounts") : 0;
         Assert.assertTrue(effectCounts > 0);
     }</#if></#if>
 }

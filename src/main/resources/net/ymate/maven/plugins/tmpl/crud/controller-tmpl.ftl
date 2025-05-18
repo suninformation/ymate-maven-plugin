@@ -146,8 +146,11 @@ public class ${prefix}${api.name?cap_first}Controller {
                     </#if>@VLength(max = 100)
                     @VField(name = "${languageMap.reason}")
                     @RequestParam String reason</#if>) throws Exception {
-        int effectCounts = repository.update${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${prefix}${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>, Fields.create(<@buildFieldName p.field true/>), Params.create(${s.value}));
-        return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
+        ErrorCode result = repository.update${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${prefix}${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>, Fields.create(<@buildFieldName p.field true/>), Params.create(${s.value}));
+        if (result != null) {
+            return WebResult.builder(result);
+        }
+        return WebResult.builder(WebErrorCode.resourceNotFoundOrNotExist());
     }</#if></#list></#if></#list></#if>
 
     <#if !(api.settings??) || api.settings.enableRemove!true><#if apidocs>@ApiAction(value = "${languageMap.remove}", description = "")</#if>
@@ -156,8 +159,11 @@ public class ${prefix}${api.name?cap_first}Controller {
     public Object remove(<#if multiPrimaryKey><#list primaryFields as p><@parseField p false/><#if p_has_next>,
 
                          </#if></#list><#else><@parseField primaryKey true/></#if>) throws Exception {
-        int effectCounts = repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${prefix}${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>);
-        return WebResult.builder().succeed().dataAttr("effectCounts", effectCounts);
+        ErrorCode result = repository.remove${api.name?cap_first}s(database, <#if multiPrimaryKey>ArrayUtils.toArray(${prefix}${api.name?cap_first}Repository.buildPrimaryKey(<#list primaryFields as p>${p.name}<#if p_has_next>, </#if></#list>))<#else>${primaryKey.name}</#if>);
+        if (result != null) {
+            return WebResult.builder(result);
+        }
+        return WebResult.builder(WebErrorCode.resourceNotFoundOrNotExist());
     }</#if></#if>
 
     <#if !(api.settings??) || api.settings.enableExport!true><#if apidocs>@ApiAction(value = "${languageMap.export}", description = "", notes = "${languageMap.notes}")</#if>

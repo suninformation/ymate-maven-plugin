@@ -4,6 +4,7 @@
         /**
          * ${p.description}
          */</#if>
+        <#if p.field??>@QField(prefix = "${p.field.prefix!""}", value = <#if (p.field.value!"")?contains(".")>${p.field.value!""}<#else>"${p.field.value!""}"</#if><#if (p.field.alias?? && p.field.alias?length > 0)>, alias = <#if (p.field.alias!"")?contains(".")>${p.field.alias!""}<#else>"${p.field.alias!""}"</#if></#if><#if p.config?? && p.config.query?? && p.config.query.enabled && p.config.query.like>, opt = Cond.OPT.LIKE</#if>)</#if>
         <#if p.config.query.validation?? && p.config.query.validation.dateTime?? && p.config.query.validation.dateTime.enabled>
             private net.ymate.platform.validation.validate.DateTimeValue ${p.name};
 
@@ -76,8 +77,11 @@ package ${app.packageName}.bean.impl;
 
 import ${app.packageName}.bean.*;
 import net.ymate.platform.core.beans.annotation.*;
+import net.ymate.platform.persistence.jdbc.query.Cond;
+import net.ymate.platform.persistence.jdbc.query.annotation.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+<#if entityPackageName??>import ${entityPackageName}.*;<#elseif api.entityClass??>import ${api.entityClass};</#if>
 
 import java.io.Serializable;
 

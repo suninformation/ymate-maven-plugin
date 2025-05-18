@@ -27,6 +27,7 @@ import ${app.packageName}.repository.I${prefix}${api.name?cap_first}Repository;
 import ${app.packageName}.vo.I${prefix}${api.name?cap_first}VO;
 import ${app.packageName}.vo.impl.${prefix}${api.name?cap_first}VO;
 import net.ymate.platform.commons.exception.DataVersionMismatchException;
+import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
@@ -38,6 +39,7 @@ import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.query.*;
 import net.ymate.platform.persistence.jdbc.repo.AbstractCrudRepository;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
+import net.ymate.platform.persistence.jdbc.support.EntityStateWrapper;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 
@@ -80,8 +82,9 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
     }
 
     @Override
-    protected ErrorCode beforeUpdate(IDatabase owner, String dataSourceName, ${entityName} entity, <#if !(api.settings??) || api.settings.enableUpdate!true>I${prefix}${api.name?cap_first}UpdateBean<#else>Void</#if> updateBean, <#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>${lastModifyTimeProp.type}<#else>org.apache.commons.lang3.ObjectUtils.Null</#if> version) throws Exception {
+    protected ErrorCode beforeUpdate(IDatabase owner, String dataSourceName, EntityStateWrapper<${entityName}> stateWrapper, <#if !(api.settings??) || api.settings.enableUpdate!true>I${prefix}${api.name?cap_first}UpdateBean<#else>Void</#if> updateBean, <#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>${lastModifyTimeProp.type}<#else>org.apache.commons.lang3.ObjectUtils.Null</#if> version) throws Exception {
         <#if !(api.settings??) || api.settings.enableUpdate!true && lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
+        ${entityName} entity = stateWrapper.getEntity();
         DataVersionMismatchException.comparisonVersion(entity.get${lastModifyTimeProp.name?cap_first}(), version);
         entity.set${lastModifyTimeProp.name?cap_first}(System.currentTimeMillis());
         return null;
@@ -95,8 +98,12 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
     public ErrorCode create${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id, <#elseif primaryKey?? && primaryKey.config.create.enabled>${primaryKey.type} ${primaryKey.name}, </#if>I${prefix}${api.name?cap_first}CreateBean createBean) throws Exception {
         try {
             return doCreate(owner, dataSourceName, createBean, null).getKey();
-        } catch (SQLIntegrityConstraintViolationException e) {
-            // TODO return Constants.${prefix}${api.name?cap_first}_EXITS;
+        } catch (Exception e) {
+            // TODO Need to throw an exception for transaction rollback.
+            // if (e instanceof SQLIntegrityConstraintViolationException
+            //        || RuntimeUtils.unwrapThrow(e) instanceof SQLIntegrityConstraintViolationException) {
+            //    throw new ServiceException(Constants.${prefix}${api.name?cap_first}_EXITS.code(), Constants.${prefix}${api.name?cap_first}_EXITS.message());
+            }
             throw e;
         }
     }</#if>
@@ -104,13 +111,23 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
     <#if !(api.settings??) || api.settings.enableUpdate!true>@Override
     @Transaction
     public ErrorCode update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, I${prefix}${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} ${lastModifyTimeProp.name}</#if>) throws Exception {
-        return doUpdate(owner, dataSourceName, id, updateBean, <#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>${lastModifyTimeProp.name}<#else>null</#if>, null, false).getKey();
+        PairObject<ErrorCode, ${entityName}> result = doUpdate(owner, dataSourceName, id, updateBean, <#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>${lastModifyTimeProp.name}<#else>null</#if>, null, false);
+        if (result.isEmpty()) {
+            // TODO return Constants.${prefix}${api.name?cap_first}_NOT_EXITS;
+            return null;
+        }
+        return result.getKey();
     }</#if>
 
     <#if !(api.settings??) || api.settings.enableStatus!true>@Override
     @Transaction
-    public int update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>, Fields fields, Params values) throws Exception {
-        return doUpdate(owner, dataSourceName, ids, fields, values);
+    public ErrorCode update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>, Fields fields, Params values, Cond additionalCond) throws Exception {
+        ErrorCode errorCode = null;
+        int effectCounts = doUpdate(owner, dataSourceName, ids, fields, values, additionalCond);
+        if (effectCounts > 0) {
+            errorCode = ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
+        }
+        return errorCode;
     }</#if></#if>
 
     <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>@Override
@@ -132,13 +149,23 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
 
     <#if !api.view><#if !(api.settings??) || api.settings.enableRemove!true>@Override
     @Transaction
-    public int remove${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
-        return doRemove(owner, dataSourceName, id);
+    public ErrorCode remove${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
+        ErrorCode errorCode = null;
+        int effectCounts = doRemove(owner, dataSourceName, id);
+        if (effectCounts > 0) {
+            errorCode = ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
+        }
+        return errorCode;
     }
 
     @Override
     @Transaction
-    public int remove${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>) throws Exception {
-        return doRemove(owner, dataSourceName, ids);
+    public ErrorCode remove${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>) throws Exception {
+        ErrorCode errorCode = null;
+        int effectCounts = doRemove(owner, dataSourceName, ids);
+        if (effectCounts > 0) {
+            errorCode = ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
+        }
+        return errorCode;
     }</#if></#if>
 }
