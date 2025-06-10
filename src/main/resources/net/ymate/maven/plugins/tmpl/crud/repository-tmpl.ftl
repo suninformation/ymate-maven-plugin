@@ -122,12 +122,8 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
     <#if !(api.settings??) || api.settings.enableStatus!true>@Override
     @Transaction
     public ErrorCode update${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>, Fields fields, Params values, Cond additionalCond) throws Exception {
-        ErrorCode errorCode = null;
         int effectCounts = doUpdate(owner, dataSourceName, ids, fields, values, additionalCond);
-        if (effectCounts > 0) {
-            errorCode = ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
-        }
-        return errorCode;
+        return ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
     }</#if></#if>
 
     <#if !(api.settings??) || api.settings.enableQuery!true><#if !api.view>@Override
@@ -150,22 +146,14 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
     <#if !api.view><#if !(api.settings??) || api.settings.enableRemove!true>@Override
     @Transaction
     public ErrorCode remove${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>) throws Exception {
-        ErrorCode errorCode = null;
         int effectCounts = doRemove(owner, dataSourceName, id);
-        if (effectCounts > 0) {
-            errorCode = ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
-        }
-        return errorCode;
+        return ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
     }
 
     @Override
     @Transaction
     public ErrorCode remove${api.name?cap_first}s(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK[] ids<#else>${primaryKey.type}[] ${primaryKey.name}s</#if>) throws Exception {
-        ErrorCode errorCode = null;
         int effectCounts = doRemove(owner, dataSourceName, ids);
-        if (effectCounts > 0) {
-            errorCode = ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
-        }
-        return errorCode;
+        return ErrorCode.succeed().dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
     }</#if></#if>
 }
