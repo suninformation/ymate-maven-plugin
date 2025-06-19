@@ -400,7 +400,7 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 //
                 CApplication cApp = new CApplication()
                         .setName(getProjectName())
-                        .setPackageName(getPackageName())
+                        .setPackageName(StringUtils.defaultIfBlank(builder.packageName(), getPackageName()))
                         .setAuthor("YMP (<a href=\"https://www.ymate.net/\">ymate.net</a>)")
                         .setVersion(getVersion())
                         .setCreateTime(DateTimeHelper.now().toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS));

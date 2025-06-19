@@ -46,24 +46,24 @@ public class ${prefix}${api.name?cap_first}CreateDTO implements Serializable {
      */</#if><#if apidocs>
     @ApiParam<#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>(description = "<#if p.description?? && (p.description?length > 0)>${p.description}<br/></#if>格式：`${((p.config.create.validation.dateTime.pattern!"")?length > 0)?string(p.config.create.validation.dateTime.pattern!"", "yyyy-MM-dd")}`")</#if></#if><#if p.config.create.required>
     @VRequired</#if><#if p.config.create.validation??><#if p.config.create.validation.length?? && p.config.create.validation.length.enabled>
-    @VLength(min = ${p.config.create.validation.length.min}, max = ${p.config.create.validation.length.max}, eq = ${p.config.create.validation.length.eq}<#if (p.config.create.validation.length.msg?length > 0)>, msg = "${p.config.create.validation.length.msg}"</#if>)</#if><#if p.config.create.validation.dataRange?? && p.config.create.validation.dataRange.enabled && p.config.create.validation.dataRange.values?? && (p.config.create.validation.dataRange.values?size > 0)>
-    @VDataRange(value = {<#list p.config.create.validation.dataRange.values as v>"${v}"<#if v_has_next>, </#if></#list>}, ignoreCase = ${p.config.create.validation.dataRange.ignoreCase?string}<#if (p.config.create.validation.dataRange.msg?length > 0)>, msg = "${p.config.create.validation.dataRange.msg}"</#if>)</#if><#if p.config.create.validation??><#if p.config.create.validation.regex?? && p.config.create.validation.regex.enabled && (p.config.create.validation.regex.regex?length > 0)>
-    @VRegex(regex = "${p.config.create.validation.regex.regex}"<#if (p.config.create.validation.regex.msg?length > 0)>, msg = "${p.config.create.validation.regex.msg}"</#if>)</#if><#if p.config.create.validation.idCard?? && p.config.create.validation.idCard.enabled>
-    @VIDCard<#if (p.config.create.validation.idCard.msg?length > 0)>(msg = "${p.config.create.validation.idCard.msg}")</#if></#if><#if p.config.create.validation.email?? && p.config.create.validation.email.enabled>
-    @VEmail<#if (p.config.create.validation.email.msg?length > 0)>(msg = "${p.config.create.validation.email.msg}")</#if></#if><#if p.config.create.validation.mobile?? && p.config.create.validation.mobile.enabled>
-    @VMobile(regex = "${p.config.create.validation.mobile.regex!""}"<#if (p.config.create.validation.mobile.msg?length > 0)>, msg = "${p.config.create.validation.mobile.msg}"</#if><#if (p.config.create.validation.mobile.msg?length > 0)>, msg = "${p.config.create.validation.mobile.msg}"</#if>)</#if><#if p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>
-    @VDateTime(value = "${p.config.create.validation.dateTime.value!p.name}", pattern = <#if ((p.config.create.validation.dateTime.pattern!"")?length > 0)>"${p.config.create.validation.dateTime.pattern!""}"<#else>DateTimeUtils.YYYY_MM_DD</#if><#if (p.config.create.validation.dateTime.msg?length > 0)>, msg = "${p.config.create.validation.dateTime.msg}"</#if>)</#if><#if p.config.create.validation.numeric?? && p.config.create.validation.numeric.enabled>
-    @VNumeric(min = ${p.config.create.validation.numeric.min}, max = ${p.config.create.validation.numeric.max}, eq = ${p.config.create.validation.numeric.eq}, decimals = ${p.config.create.validation.numeric.decimals}<#if (p.config.create.validation.numeric.msg?length > 0)>, msg = "${p.config.create.validation.numeric.msg}"</#if>)</#if></#if><#if p.description?? && (p.description?length > 0)>
+    @VLength(min = ${p.config.create.validation.length.min}, max = ${p.config.create.validation.length.max}, eq = ${p.config.create.validation.length.eq}<#if p.config.create.validation.length.msg?? && (p.config.create.validation.length.msg?length > 0)>, msg = "${(p.config.create.validation.length.msg)!""}"</#if>)</#if><#if p.config.create.validation.dataRange?? && p.config.create.validation.dataRange.enabled && p.config.create.validation.dataRange.values?? && (p.config.create.validation.dataRange.values?size > 0)>
+    @VDataRange(value = {<#list p.config.create.validation.dataRange.values as v>"${v}"<#if v_has_next>, </#if></#list>}, ignoreCase = ${p.config.create.validation.dataRange.ignoreCase?string}<#if p.config.create.validation.dataRange.msg?? && (p.config.create.validation.dataRange.msg?length > 0)>, msg = "${(p.config.create.validation.dataRange.msg)!""}"</#if>)</#if><#if p.config.create.validation??><#if p.config.create.validation.regex?? && p.config.create.validation.regex.enabled && p.config.create.validation.regex.regex?? && (p.config.create.validation.regex.regex?length > 0)>
+    @VRegex(regex = "${p.config.create.validation.regex.regex}"<#if p.config.create.validation.regex.msg?? && (p.config.create.validation.regex.msg?length > 0)>, msg = "${(p.config.create.validation.regex.msg)!""}"</#if>)</#if><#if p.config.create.validation.idCard?? && p.config.create.validation.idCard.enabled>
+    @VIDCard<#if p.config.create.validation.idCard.msg?? && (p.config.create.validation.idCard.msg?length > 0)>(msg = "${(p.config.create.validation.idCard.msg)!""}")</#if></#if><#if p.config.create.validation.email?? && p.config.create.validation.email.enabled>
+    @VEmail<#if p.config.create.validation.email.msg?? && (p.config.create.validation.email.msg?length > 0)>(msg = "${(p.config.create.validation.email.msg)!""}")</#if></#if><#if p.config.create.validation.mobile?? && p.config.create.validation.mobile.enabled>
+    @VMobile(regex = "${p.config.create.validation.mobile.regex!""}"<#if p.config.create.validation.mobile.msg?? && (p.config.create.validation.mobile.msg?length > 0)>, msg = "${(p.config.create.validation.mobile.msg)!""}"</#if><#if p.config.create.validation.mobile.msg?? && (p.config.create.validation.mobile.msg?length > 0)>, msg = "${(p.config.create.validation.mobile.msg)!""}"</#if>)</#if><#if p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>
+    @VDateTime(value = "${p.config.create.validation.dateTime.value!p.name}", pattern = <#if ((p.config.create.validation.dateTime.pattern!"")?length > 0)>"${p.config.create.validation.dateTime.pattern!""}"<#else>DateTimeUtils.YYYY_MM_DD</#if><#if p.config.create.validation.dateTime.msg?? && (p.config.create.validation.dateTime.msg?length > 0)>, msg = "${(p.config.create.validation.dateTime.msg)!""}"</#if>)</#if><#if p.config.create.validation.numeric?? && p.config.create.validation.numeric.enabled>
+    @VNumeric(min = ${p.config.create.validation.numeric.min}, max = ${p.config.create.validation.numeric.max}, eq = ${p.config.create.validation.numeric.eq}, decimals = ${p.config.create.validation.numeric.decimals}<#if p.config.create.validation.numeric.msg?? && (p.config.create.validation.numeric.msg?length > 0)>, msg = "${(p.config.create.validation.numeric.msg)!""}"</#if>)</#if></#if><#if p.description?? && (p.description?length > 0)>
     @VField(name = "${p.description}")</#if></#if>
     @RequestParam
-    private <#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>String<#else>${p.type}</#if> ${p.name};</#if>
+    private <#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>DateTimeValue<#else>${p.type}</#if> ${p.name};</#if>
 
 </#list><#list normalFields as p><#if p.config?? && p.config.create?? && p.config.create.enabled>
-    public <#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>String<#else>${p.type}</#if> get${p.name?cap_first}() {
+    public <#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>DateTimeValue<#else>${p.type}</#if> get${p.name?cap_first}() {
         return ${p.name};
     }
 
-    public void set${p.name?cap_first}(<#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>String<#else>${p.type}</#if> ${p.name}) {
+    public void set${p.name?cap_first}(<#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>DateTimeValue<#else>${p.type}</#if> ${p.name}) {
         this.${p.name} = ${p.name};
     }
 
@@ -71,7 +71,7 @@ public class ${prefix}${api.name?cap_first}CreateDTO implements Serializable {
     public ${prefix}${api.name?cap_first}CreateBean toBean() {
         // return ClassUtils.wrapper(this).duplicate(new ${prefix}${api.name?cap_first}CreateBean());
         ${prefix}${api.name?cap_first}CreateBean.Builder builder = ${prefix}${api.name?cap_first}CreateBean.builder()<#list normalFields as p><#if p.config?? && p.config.create?? && p.config.create.enabled><#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>
-                .${p.name}(DateTimeValue.getStartDateTimeMillisOrNull("${p.name}"))<#else>
+                .${p.name}(DateTimeValue.getStartDateTimeMillisOrNull(${p.name}))<#else>
                 .${p.name}(${p.name})</#if></#if></#list>;
         return builder.build();
     }
@@ -111,11 +111,11 @@ public class ${prefix}${api.name?cap_first}CreateDTO implements Serializable {
             return targetDTO;
         }<#list normalFields as p><#if p.config?? && p.config.create?? && p.config.create.enabled>
 
-        public <#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>String<#else>${p.type}</#if> ${p.name}() {
+        public <#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>DateTimeValue<#else>${p.type}</#if> ${p.name}() {
             return targetDTO.get${p.name?cap_first}();
         }
 
-        public Builder ${p.name}(<#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>String<#else>${p.type}</#if> ${p.name}) {
+        public Builder ${p.name}(<#if p.config.create.validation?? && p.config.create.validation.dateTime?? && p.config.create.validation.dateTime.enabled>DateTimeValue<#else>${p.type}</#if> ${p.name}) {
             targetDTO.set${p.name?cap_first}(${p.name});
             return this;
         }</#if></#list>

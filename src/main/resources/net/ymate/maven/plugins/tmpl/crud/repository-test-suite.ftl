@@ -35,8 +35,8 @@ import org.junit.runners.Suite;
  * @since ${app.version!"1.0.0"}
  */
 @RunWith(YMPJUnit4Suite.class)
-@Suite.SuiteClasses({<#list app.apis as p>
-    ${prefix}${p.name?cap_first}RepositoryTest.class<#if p_has_next>, </#if></#list>
+@Suite.SuiteClasses({<#list app.apis as p><#if !p.locked && filters?? && filters?seq_contains(p.name)>
+    ${prefix}${p.name?cap_first}RepositoryTest.class<#if p_has_next>, </#if><#else></#if></#list>
 })
 @EnableAutoScan
 @EnableBeanProxy

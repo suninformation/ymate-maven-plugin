@@ -48,9 +48,9 @@ public class ${prefix}${api.name?cap_first}VO implements I${prefix}${api.name?ca
      * ${p.description}
      */</#if><#if apidocs>
     @ApiProperty(description = "${p.description!""}", demoValue = "${p.demoValue!""}")</#if><#if p.field??>
-    @QField(prefix = "${p.field.prefix!""}", value = <#if (p.field.value!"")?contains(".")>${p.field.value!""}<#else>"${p.field.value!""}"</#if><#if (p.field.alias?? && p.field.alias?length > 0)>, alias = <#if (p.field.alias!"")?contains(".")>${p.field.alias!""}<#else>"${p.field.alias!""}"</#if></#if>)</#if><#if p.export>
+    @QField(prefix = "${p.field.prefix!""}", value = <#if (p.field.value!"")?contains(".")>${p.field.value!""}<#else>"${p.field.value!""}"</#if><#if (p.field.alias?? && p.field.alias?length > 0)>, alias = <#if (p.field.alias!"")?contains(".")>${p.field.alias!""}<#else>"${p.field.alias!""}"</#if></#if>)</#if><#if !(api.settings??) || api.settings.enableExport!true><#if p.export>
     @ExportColumn(value = "${p.description!""}"<#if p.column??><#if p.column?lower_case == "create_time" || p.column?lower_case == "createtime" || p.column?lower_case == "create_at" || p.column?lower_case == "createat" || p.column?lower_case == "last_modify_time" || p.column?lower_case == "lastmodifytime" || p.column?lower_case == "last_modify_at" || p.column?lower_case == "lastmodifyat">, dateTime = true</#if><#if p.column == "status">, dataRange = {"启用", "禁用"}</#if></#if>)<#else>
-    @ExportColumn(excluded = true)</#if>
+    @ExportColumn(excluded = true)</#if></#if>
     private ${p.type} ${p.name};
 
 </#list></#if><#if (api.properties?? && api.properties?size > 0)><#list api.properties as p>

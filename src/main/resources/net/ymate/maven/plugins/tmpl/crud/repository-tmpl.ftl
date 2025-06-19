@@ -83,10 +83,14 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
 
     @Override
     protected ErrorCode beforeUpdate(IDatabase owner, String dataSourceName, EntityStateWrapper<${entityName}> stateWrapper, <#if !(api.settings??) || api.settings.enableUpdate!true>I${prefix}${api.name?cap_first}UpdateBean<#else>Void</#if> updateBean, <#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>${lastModifyTimeProp.type}<#else>org.apache.commons.lang3.ObjectUtils.Null</#if> version) throws Exception {
-        <#if !(api.settings??) || api.settings.enableUpdate!true && lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
+        <#if !(api.settings??) || api.settings.enableUpdate!true>
         ${entityName} entity = stateWrapper.getEntity();
+        <#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>
         DataVersionMismatchException.comparisonVersion(entity.get${lastModifyTimeProp.name?cap_first}(), version);
-        entity.set${lastModifyTimeProp.name?cap_first}(System.currentTimeMillis());
+        if (stateWrapper.hasChanged()) {
+            entity.set${lastModifyTimeProp.name?cap_first}(System.currentTimeMillis());
+        }
+        </#if>
         return null;
         <#else>
         throw new UnsupportedOperationException();
@@ -102,8 +106,8 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
             // TODO Need to throw an exception for transaction rollback.
             // if (e instanceof SQLIntegrityConstraintViolationException
             //        || RuntimeUtils.unwrapThrow(e) instanceof SQLIntegrityConstraintViolationException) {
-            //    throw new ServiceException(Constants.${prefix}${api.name?cap_first}_EXITS.code(), Constants.${prefix}${api.name?cap_first}_EXITS.message());
-            }
+            //    throw new ServiceException(Constants.${prefix}${api.name?cap_first}_EXISTS.code(), Constants.${prefix}${api.name?cap_first}_EXISTS.message());
+            // }
             throw e;
         }
     }</#if>
@@ -113,7 +117,7 @@ public class ${prefix}${api.name?cap_first}Repository extends AbstractCrudReposi
     public ErrorCode update${api.name?cap_first}(IDatabase owner, String dataSourceName, <#if multiPrimaryKey>${prefix}${api.name?cap_first}PK id<#else>${primaryKey.type} ${primaryKey.name}</#if>, I${prefix}${api.name?cap_first}UpdateBean updateBean<#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>, ${lastModifyTimeProp.type} ${lastModifyTimeProp.name}</#if>) throws Exception {
         PairObject<ErrorCode, ${entityName}> result = doUpdate(owner, dataSourceName, id, updateBean, <#if lastModifyTimeProp?? && !lastModifyTimeProp.foreign>${lastModifyTimeProp.name}<#else>null</#if>, null, false);
         if (result.isEmpty()) {
-            // TODO return Constants.${prefix}${api.name?cap_first}_NOT_EXITS;
+            // TODO return Constants.${prefix}${api.name?cap_first}_NOT_EXISTS;
             return null;
         }
         return result.getKey();

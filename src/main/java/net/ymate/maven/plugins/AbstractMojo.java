@@ -190,7 +190,7 @@ public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo 
                         .setTemplateExceptionHandler(TemplateExceptionHandler.DEBUG_HANDLER);
                 File miscFile = new File(basedir, "/misc");
                 if (miscFile.exists()) {
-                    freemarkerConfigBuilder.addTemplateFileDir();
+                    freemarkerConfigBuilder.addTemplateFileDir(miscFile);
                 }
                 freemarkerConfig = freemarkerConfigBuilder.build();
             } catch (IOException e) {
