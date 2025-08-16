@@ -479,7 +479,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                     .setLogicalOpt(Cond.LogicalOpt.AND)))
                             .setType(Join.Type.LEFT)))
                     .setOrderFields(Collections.singletonList(new COrderField()
-                            .setType(QOrderField.Type.DESC))));
+                            .setType(QOrderField.Type.DESC)))
+                    .setGroupBy(new CGroupBy()
+                            .setFields(Collections.emptyList())
+                            .setHaving(Collections.emptyList())));
             cApi.setSettings(new CSettings()
                     .setEnableStatus(true)
                     .setEnableExport(true)
@@ -519,7 +522,12 @@ public class CrudMojo extends AbstractPersistenceMojo {
                                         .setOpt("EQ")
                                         .setWith(new CField())
                                         .setLogicalOpt(Cond.LogicalOpt.AND)))
-                                .setType(Join.Type.LEFT))))
+                                .setType(Join.Type.LEFT)))
+                        .setOrderFields(Collections.singletonList(new COrderField()
+                                .setType(QOrderField.Type.DESC)))
+                        .setGroupBy(new CGroupBy()
+                                .setFields(Collections.emptyList())
+                                .setHaving(Collections.emptyList())))
                 .setSettings(new CSettings()
                         .setEnableCreate(!view)
                         .setEnableQuery(true)
@@ -1246,6 +1254,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         private List<COrderField> orderFields;
 
+        private CGroupBy groupBy;
+
+        private boolean distinct;
+
         public List<CFrom> getFroms() {
             return froms;
         }
@@ -1270,6 +1282,24 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         public CQuery setOrderFields(List<COrderField> orderFields) {
             this.orderFields = orderFields;
+            return this;
+        }
+
+        public CGroupBy getGroupBy() {
+            return groupBy;
+        }
+
+        public CQuery setGroupBy(CGroupBy groupBy) {
+            this.groupBy = groupBy;
+            return this;
+        }
+
+        public boolean isDistinct() {
+            return distinct;
+        }
+
+        public CQuery setDistinct(boolean distinct) {
+            this.distinct = distinct;
             return this;
         }
     }
@@ -1765,6 +1795,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         private QFrom.Type type;
 
+        private boolean unwrapIdentifier;
+
         public String getPrefix() {
             return prefix;
         }
@@ -1800,6 +1832,59 @@ public class CrudMojo extends AbstractPersistenceMojo {
             this.type = type;
             return this;
         }
+
+        public boolean isUnwrapIdentifier() {
+            return unwrapIdentifier;
+        }
+
+        public CFrom setUnwrapIdentifier(boolean unwrapIdentifier) {
+            this.unwrapIdentifier = unwrapIdentifier;
+            return this;
+        }
+    }
+
+    public static class CGroupBy {
+
+        private boolean enabled;
+        private List<CField> fields;
+        private List<COn> having;
+        private boolean rollup;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public CGroupBy setEnabled(boolean enabled) {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public List<CField> getFields() {
+            return fields;
+        }
+
+        public CGroupBy setFields(List<CField> fields) {
+            this.fields = fields;
+            return this;
+        }
+
+        public List<COn> getHaving() {
+            return having;
+        }
+
+        public CGroupBy setHaving(List<COn> having) {
+            this.having = having;
+            return this;
+        }
+
+        public boolean isRollup() {
+            return rollup;
+        }
+
+        public CGroupBy setRollup(boolean rollup) {
+            this.rollup = rollup;
+            return this;
+        }
     }
 
     public static class CField {
@@ -1809,6 +1894,10 @@ public class CrudMojo extends AbstractPersistenceMojo {
         private String value;
 
         private String alias;
+
+        private boolean ungrouped;
+
+        private boolean unwrapIdentifier;
 
         public String getPrefix() {
             return prefix;
@@ -1836,6 +1925,24 @@ public class CrudMojo extends AbstractPersistenceMojo {
             this.alias = alias;
             return this;
         }
+
+        public boolean isUngrouped() {
+            return ungrouped;
+        }
+
+        public CField setUngrouped(boolean ungrouped) {
+            this.ungrouped = ungrouped;
+            return this;
+        }
+
+        public boolean isUnwrapIdentifier() {
+            return unwrapIdentifier;
+        }
+
+        public CField setUnwrapIdentifier(boolean unwrapIdentifier) {
+            this.unwrapIdentifier = unwrapIdentifier;
+            return this;
+        }
     }
 
     public static class COrderField {
@@ -1845,6 +1952,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
         private String value;
 
         private QOrderField.Type type;
+
+        private boolean unwrapIdentifier;
 
         public String getPrefix() {
             return prefix;
@@ -1870,6 +1979,15 @@ public class CrudMojo extends AbstractPersistenceMojo {
 
         public COrderField setType(QOrderField.Type type) {
             this.type = type;
+            return this;
+        }
+
+        public boolean isUnwrapIdentifier() {
+            return unwrapIdentifier;
+        }
+
+        public COrderField setUnwrapIdentifier(boolean unwrapIdentifier) {
+            this.unwrapIdentifier = unwrapIdentifier;
             return this;
         }
     }
