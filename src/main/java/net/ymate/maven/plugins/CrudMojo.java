@@ -2097,6 +2097,8 @@ public class CrudMojo extends AbstractPersistenceMojo {
                 switch (((String) value).toUpperCase()) {
                     case "INNER":
                         return (T) Join.Type.INNER;
+                    case "CROSS":
+                        return (T) Join.Type.CROSS;
                     case "RIGHT":
                         return (T) Join.Type.RIGHT;
                     default:
